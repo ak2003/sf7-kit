@@ -1,0 +1,16 @@
+{
+  "database": {
+    "driver": "postgresql",
+    "postgresql": {
+      "timeout": 5,
+      "host": "localhost",
+      "port": "5432",
+      "dbname": "mw_account",
+      "user": "arikarniawan",
+      "password": ""
+    }
+  },
+  "jwt": {
+    "key" : "rahasiakita"
+  }
+}
