@@ -27,9 +27,9 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints) http.Handler {
 
 
 	// User Registration
-	v1.Methods("POST").Path("/product").Handler(httpTransport.NewServer(
-		endpoints.CreateProduct,
-		decodeCreateProductReq,
+	v1.Methods("POST").Path("/order/cart").Handler(httpTransport.NewServer(
+		endpoints.AddToCart,
+		decodeAddToCartReq,
 		response.EncodeJson,
 	))
 

@@ -1,0 +1,17 @@
+syntax = "proto3";
+option go_package = "protoc/model";
+package model;
+
+message ProductList {
+  string id = 1;
+  string productName = 2;
+  string categoryID = 3;
+}
+
+message ProductId {
+  string id = 1;
+}
+
+service Products {
+  rpc List(ProductId) returns (ProductList) {}
+}

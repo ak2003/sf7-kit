@@ -9,21 +9,19 @@ import (
 )
 
 type Endpoints struct {
-	CreateProduct endpoint.Endpoint
-	GetUser    endpoint.Endpoint
-	LoginUser  endpoint.Endpoint
+	AddToCart endpoint.Endpoint
 }
 
 func MakeEndpoints(s Service) Endpoints {
 	return Endpoints{
-		CreateProduct: makeCreateProductEndpoint(s),
+		AddToCart: makeAddToCartEndpoint(s),
 	}
 }
 
-func makeCreateProductEndpoint(s Service) endpoint.Endpoint {
+func makeAddToCartEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(CreateProductRequest)
-		msg, err := s.CreateProduct(ctx, req)
+		req := request.(AddToCartRequest)
+		msg, err := s.AddToCart(ctx, req)
 		httpCode := http.StatusOK
 		if err != nil {
 			httpCode = http.StatusUnprocessableEntity

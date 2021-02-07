@@ -7,16 +7,17 @@ import (
 )
 
 type (
-	CreateProductRequest struct {
-		Product
+
+	AddToCartRequest struct {
+		ProductID string `json:"product_id,omitempty"`
+		Sku       string `json:"sku,omitempty"`
+		CartID    string `json:"cart_id,omitempty"`
+		Qty       int    `json:"qty,omitempty"`
 	}
-
-
 )
 
-
-func decodeCreateProductReq(ctx context.Context, r *http.Request) (interface{}, error) {
-	var req CreateProductRequest
+func decodeAddToCartReq(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req AddToCartRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		return nil, err

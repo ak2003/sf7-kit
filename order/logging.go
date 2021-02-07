@@ -12,17 +12,39 @@ type LoggingMiddleware struct {
 	Next   Service
 }
 
-func (mw LoggingMiddleware) CreateProduct(ctx context.Context, product interface{}) (output interface{}, err error) {
+//func (mw LoggingMiddleware) CreateProduct(ctx context.Context, product interface{}) (output interface{}, err error) {
+//	var i []byte
+//
+//	i, err = json.Marshal(product)
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	defer func(begin time.Time) {
+//		_ = mw.Logger.Log(
+//			"method", "CreateProduct",
+//			"input", i,
+//			"output", output,
+//			"err", err,
+//			"took", time.Since(begin),
+//		)
+//	}(time.Now())
+//
+//	output, err = mw.Next.CreateProduct(ctx, product)
+//	return
+//}
+
+func (mw LoggingMiddleware) AddToCart(ctx context.Context, req AddToCartRequest) (output interface{}, err error) {
 	var i []byte
 
-	i, err = json.Marshal(product)
+	i, err = json.Marshal(req)
 	if err != nil {
 		return nil, err
 	}
 
 	defer func(begin time.Time) {
 		_ = mw.Logger.Log(
-			"method", "CreateProduct",
+			"method", "AddToCart",
 			"input", i,
 			"output", output,
 			"err", err,
@@ -30,7 +52,7 @@ func (mw LoggingMiddleware) CreateProduct(ctx context.Context, product interface
 		)
 	}(time.Now())
 
-	output, err = mw.Next.CreateProduct(ctx, product)
+	output, err = mw.Next.AddToCart(ctx, req)
 	return
 }
 

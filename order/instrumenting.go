@@ -15,13 +15,14 @@ type InstrumentingMiddleware struct {
 	Next           Service
 }
 
-func (mw InstrumentingMiddleware) CreateProduct(ctx context.Context, product interface{}) (output interface{}, err error) {
+
+func (mw InstrumentingMiddleware) AddToCart(ctx context.Context, req AddToCartRequest) (output interface{}, err error) {
 	defer func(begin time.Time) {
-		lvs := []string{"method", "CreateProduct", "error", fmt.Sprint(err != nil)}
+		lvs := []string{"method", "AddToCart", "error", fmt.Sprint(err != nil)}
 		mw.RequestCount.With(lvs...).Add(1)
 		mw.RequestLatency.With(lvs...).Observe(time.Since(begin).Seconds())
 	}(time.Now())
 
-	output, err = mw.Next.CreateProduct(ctx, product)
+	output, err = mw.Next.AddToCart(ctx, req)
 	return
 }

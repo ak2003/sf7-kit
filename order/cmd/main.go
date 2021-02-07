@@ -8,7 +8,7 @@ import (
 	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
 	stdPrometheus "github.com/prometheus/client_golang/prometheus"
-	"gt-kit/product"
+	"gt-kit/order"
 	"gt-kit/shared/utils/config"
 
 	"github.com/go-kit/kit/log"
@@ -21,7 +21,7 @@ import (
 	"syscall"
 )
 
-var serviceName = "product"
+var serviceName = "order"
 
 func init()  {
 	fmt.Println("Initiate Config")
@@ -30,7 +30,7 @@ func init()  {
 
 func main() {
 
-	var httpAddr = flag.String("http", ":8080", "http listen address")
+	var httpAddr = flag.String("http", ":7070", "http listen address")
 	var logger log.Logger
 	{
 		logger = log.NewLogfmtLogger(os.Stderr)
@@ -97,20 +97,20 @@ func main() {
 		Help:      "The result of each count method.",
 	}, []string{}) // no fields here
 
-	var srv product.Service
+	var srv order.Service
 	{
-		repository := product.NewRepo(db, logger)
-		srv = product.NewService(repository, logger)
+		repository := order.NewRepo(db, logger)
+		srv = order.NewService(repository, logger)
 	}
 
-	srv = product.LoggingMiddleware{Logger: logger, Next: srv}
-	srv = product.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srv}
+	srv = order.LoggingMiddleware{Logger: logger, Next: srv}
+	srv = order.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srv}
 
-	endpoints := product.MakeEndpoints(srv)
+	endpoints := order.MakeEndpoints(srv)
 
 	go func() {
 		fmt.Println("listening on port", *httpAddr)
-		handler := product.NewHTTPServer(ctx, endpoints)
+		handler := order.NewHTTPServer(ctx, endpoints)
 		errs <- http.ListenAndServe(*httpAddr, handler)
 	}()
 

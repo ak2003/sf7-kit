@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/afex/hystrix-go/hystrix"
+	"gt-kit/product/model/protoc/model"
 	"gt-kit/shared/utils/logger"
 
 	"github.com/go-kit/kit/log"
@@ -12,19 +13,19 @@ import (
 	"github.com/olivere/elastic/v7"
 )
 
-type service struct {
+type ProductService struct {
 	repository Repository
 	logger     log.Logger
 }
 
 func NewService(rep Repository, logger log.Logger) Service {
-	return &service{
+	return &ProductService{
 		repository: rep,
 		logger:     logger,
 	}
 }
 
-func (s service) CreateProduct(ctx context.Context, product interface{}) (interface{}, error) {
+func (s ProductService) CreateProduct(ctx context.Context, product interface{}) (interface{}, error) {
 
 	var (
 		logCreate = logger.MakeLogEntry("product", "CreateProduct")
@@ -66,7 +67,7 @@ func (s service) CreateProduct(ctx context.Context, product interface{}) (interf
 
 }
 
-func (s service) storeToEs(ctx context.Context, uid string, p Product, tx *sql.Tx) error  {
+func (s ProductService) storeToEs(ctx context.Context, uid string, p Product, tx *sql.Tx) error  {
 	var (
 		err error
 		client *elastic.Client
@@ -98,4 +99,16 @@ func (s service) storeToEs(ctx context.Context, uid string, p Product, tx *sql.T
 	})
 
 	return err
+}
+
+var localStorage *model.ProductList
+
+func (s ProductService) List(ctx context.Context, param *model.ProductId) (*model.ProductList, error) {
+	localStorage = new(model.ProductList)
+	localStorage = &model.ProductList{
+		Id:          "1",
+		ProductName: "Test",
+		CategoryID:  "1",
+	}
+	return localStorage, nil
 }
