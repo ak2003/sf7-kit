@@ -5,16 +5,15 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"github.com/go-kit/kit/log"
+	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
+	_ "github.com/lib/pq"
+	stdPrometheus "github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
 	"gt-kit/product"
 	"gt-kit/product/model/protoc/model"
 	"gt-kit/shared/utils/config"
 	"net"
-
-	"github.com/go-kit/kit/log"
-	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
-	_ "github.com/lib/pq"
-	stdPrometheus "github.com/prometheus/client_golang/prometheus"
 
 	"github.com/go-kit/kit/log/level"
 
@@ -25,6 +24,11 @@ import (
 )
 
 var serviceName = "product"
+
+func init()  {
+	fmt.Println("Initiate Config")
+	config.SetConfigFile("config", "user/config", "json")
+}
 
 func main() {
 
@@ -55,6 +59,7 @@ func main() {
 			dbName   = config.GetDBName(dbDriver)
 		)
 		var dbSource = "postgresql://" + dbUser + ":" + dbPass + "@" + dbHost + ":" + dbPort + "/" + dbName + "?sslmode=disable"
+		level.Info(logger).Log("dbInfo", dbSource)
 		db, err = sql.Open("postgres", dbSource)
 		if err != nil {
 			level.Error(logger).Log("exit", err)

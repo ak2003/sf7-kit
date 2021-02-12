@@ -27,6 +27,7 @@ func init()  {
 	fmt.Println("Initiate Config")
 	config.SetConfigFile("config", "user/config", "json")
 }
+
 func main() {
 
 	var httpAddr = flag.String("http", ":8080", "http listen address")
@@ -56,6 +57,7 @@ func main() {
 			dbName = config.GetDBName(dbDriver)
 		)
 		var dbSource = "postgresql://"+ dbUser +":"+ dbPass +"@"+dbHost+":"+dbPort+"/"+ dbName+"?sslmode=disable"
+		level.Info(logger).Log("dbInfo", dbSource)
 		db, err = sql.Open("postgres", dbSource)
 		if err != nil {
 			level.Error(logger).Log("exit", err)

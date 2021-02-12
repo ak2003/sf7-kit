@@ -43,7 +43,7 @@ func (repo *repo) CreateProduct(ctx context.Context, p Product) (*sql.Tx, error)
 	}
 
 	// Variant
-	v, err = json.Marshal(p.Variant)
+	v, err = json.Marshal(p.Options)
 	if err != nil {
 		level.Error(logCreate).Log("err", err)
 		return nil, err
@@ -57,7 +57,7 @@ func (repo *repo) CreateProduct(ctx context.Context, p Product) (*sql.Tx, error)
 	}
 
 	var query = `
-		INSERT INTO mt_product (id, name, category_id, supplier_id, description, variant, gallery, price, disc_price, disc_percent)
+		INSERT INTO mt_product (id, name, category_id, supplier_id, description, options, gallery, price, disc_price, disc_percent)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 	tx, errTx := repo.db.Begin()

@@ -3,9 +3,10 @@ package product
 import (
 	"context"
 	"database/sql"
-	"github.com/afex/hystrix-go/hystrix"
 	"gt-kit/product/model/protoc/model"
 	"gt-kit/shared/utils/logger"
+
+	"github.com/afex/hystrix-go/hystrix"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -31,9 +32,16 @@ func (s ProductService) CreateProduct(ctx context.Context, product interface{}) 
 		logCreate = logger.MakeLogEntry("product", "CreateProduct")
 		p         Product
 		r         CreateProductRequest
+		options   []Options
 	)
 
 	r = product.(CreateProductRequest)
+
+	for _, index := range r.Options {
+		uidOpt, _ := uuid.NewV4()
+		index.Id = uidOpt.String()
+		options = append(options, index)
+	}
 
 	uid, _ := uuid.NewV4()
 	p = Product{
@@ -45,13 +53,13 @@ func (s ProductService) CreateProduct(ctx context.Context, product interface{}) 
 		Price:       r.Price,
 		DiscPrice:   r.DiscPrice,
 		DiscPercent: r.DiscPercent,
-		Variant:     r.Variant,
+		Options:     options,
 		Gallery:     r.Gallery,
 		SupplierID:  r.SupplierID,
 	}
 
 	tx, err := s.repository.CreateProduct(ctx, p)
-	if  err != nil {
+	if err != nil {
 		level.Error(logCreate).Log("err", err)
 		return &p, err
 	}
@@ -63,13 +71,13 @@ func (s ProductService) CreateProduct(ctx context.Context, product interface{}) 
 	}
 
 	level.Info(logCreate).Log("msg", uid)
-	return "problem", nil
+	return uid, nil
 
 }
 
-func (s ProductService) storeToEs(ctx context.Context, uid string, p Product, tx *sql.Tx) error  {
+func (s ProductService) storeToEs(ctx context.Context, uid string, p Product, tx *sql.Tx) error {
 	var (
-		err error
+		err    error
 		client *elastic.Client
 	)
 	err = hystrix.Do("store_to_es", func() error {

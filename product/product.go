@@ -14,7 +14,7 @@ type Product struct {
 	Price       int           `json:"price,omitempty"`
 	DiscPrice   int           `json:"disc_price,omitempty"`
 	DiscPercent int           `json:"disc_percent,omitempty"`
-	Variant     []Variant     `json:"variant,omitempty"`
+	Options     []Options     `json:"options,omitempty"`
 	Gallery     []string      `json:"gallery,omitempty"`
 	SupplierID  int           `json:"supplier_id,omitempty"`
 }
@@ -24,15 +24,17 @@ type Description struct {
 	Content string `json:"content,omitempty"`
 }
 
-type Variant struct {
-	Title   string       `json:"title,omitempty"`
-	Type    string       `json:"type,omitempty"`
-	Options []VariantOpt `json:"options,omitempty"`
+type Options struct {
+	Id          string
+	Title       string        `json:"title,omitempty"`
+	Type        string        `json:"type,omitempty"`
+	Options     []ItemOptions `json:"item_options,omitempty"`
+	IsMandatory bool          `json:"is_mandatory"`
 }
 
-type VariantOpt struct {
-	Title string `json:"title,omitempty"`
-	Price string `json:"price,omitempty"`
+type ItemOptions struct {
+	ItemName string `json:"item_name,omitempty"`
+	Price    string `json:"price,omitempty"`
 }
 
 type Repository interface {
