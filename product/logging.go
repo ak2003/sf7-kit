@@ -35,7 +35,7 @@ func (mw LoggingMiddleware) CreateProduct(ctx context.Context, product interface
 	return
 }
 
-func (mw LoggingMiddleware) List(ctx context.Context, param *model.ProductId) (output *model.ProductList, err error) {
+func (mw LoggingMiddleware) DetailProduct(ctx context.Context, param *model.ProductId) (output *model.ProductDetail, err error) {
 	var i []byte
 
 	i, err = json.Marshal(param)
@@ -53,7 +53,7 @@ func (mw LoggingMiddleware) List(ctx context.Context, param *model.ProductId) (o
 		)
 	}(time.Now())
 
-	output, err = mw.Next.List(ctx, param)
+	output, err = mw.Next.DetailProduct(ctx, param)
 	return
 }
 

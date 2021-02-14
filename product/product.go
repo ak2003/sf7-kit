@@ -3,6 +3,7 @@ package product
 import (
 	"context"
 	"database/sql"
+	"gt-kit/product/model/protoc/model"
 )
 
 type Product struct {
@@ -33,11 +34,12 @@ type Options struct {
 }
 
 type ItemOptions struct {
-	ItemName string `json:"item_name,omitempty"`
-	Price    string `json:"price,omitempty"`
+	Value string `json:"value,omitempty"`
+	Price string `json:"price,omitempty"`
 }
 
 type Repository interface {
 	CreateProduct(ctx context.Context, product Product) (*sql.Tx, error)
 	DeleteProduct(ct context.Context, uid string) error
+	DetailProduct(ctx context.Context, id string) (*model.ProductDetail, error)
 }

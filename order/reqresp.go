@@ -7,12 +7,16 @@ import (
 )
 
 type (
-
 	AddToCartRequest struct {
 		ProductID string `json:"product_id,omitempty"`
-		Sku       string `json:"sku,omitempty"`
 		CartID    string `json:"cart_id,omitempty"`
 		Qty       int    `json:"qty,omitempty"`
+		Options   []Options
+	}
+
+	Options struct {
+		Id    string
+		Value string
 	}
 )
 

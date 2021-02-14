@@ -120,8 +120,7 @@ func main() {
 
 	// Starting RPC Server
 	srvRpc := grpc.NewServer()
-	var prodSrv product.ProductService
-	model.RegisterProductsServer(srvRpc, prodSrv)
+	model.RegisterProductsServer(srvRpc, srv)
 
 	go func() {
 		level.Info(logger).Log("msg", "Starting RPC server at" + ":7000")

@@ -42,7 +42,7 @@ func (s service) AddToCart(ctx context.Context, itemCart AddToCartRequest) (inte
 	prod := serviceProduct()
 
 	// show all registered users
-	res1, err := prod.List(context.Background(), &model.ProductId{Id: "1"})
+	res1, err := prod.DetailProduct(context.Background(), &model.ProductId{Id: "9de3eb5c-79af-4165-9acd-a9af52bd7bfc"})
 	if err != nil {
 		level.Error(logLogin).Log("err", err.Error())
 	}

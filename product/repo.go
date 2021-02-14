@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"gt-kit/product/model/protoc/model"
 	"gt-kit/shared/utils/logger"
 
 	"github.com/go-kit/kit/log/level"
@@ -71,6 +73,26 @@ func (repo *repo) CreateProduct(ctx context.Context, p Product) (*sql.Tx, error)
 		return nil, err
 	}
 	return tx, nil
+}
+
+func (repo *repo) DetailProduct(ctx context.Context, id string) (*model.ProductDetail, error) {
+	var (
+		p model.ProductDetail
+		gallery string
+		options string
+		a interface{}
+	)
+
+	err := repo.db.QueryRow("SELECT id,name,gallery,options FROM mt_product WHERE id=$1", id).Scan(&p.Id,&p.ProductName,&gallery, &options)
+	if err != nil {
+		level.Error(logCreate).Log("err", err)
+		return nil, err
+	}
+	json.Unmarshal([]byte(gallery), &p.Gallery)
+	json.Unmarshal([]byte(options), &a)
+	fmt.Printf("%+v", a)
+	//json.Unmarshal([]byte(options), &p.Gallery)
+	return &p, nil
 }
 
 func (repo *repo) DeleteProduct(ctx context.Context, id string) error {

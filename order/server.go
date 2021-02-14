@@ -26,12 +26,18 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints) http.Handler {
 	v1 := r.PathPrefix("/v1").Subrouter()
 
 
-	// User Registration
+	// Add To cart
 	v1.Methods("POST").Path("/order/cart").Handler(httpTransport.NewServer(
 		endpoints.AddToCart,
 		decodeAddToCartReq,
 		response.EncodeJson,
 	))
+
+	// Cart List
+
+	// Delete cart by product_id
+
+	// Empty Cart (Delete by cartID)
 
 
 	// Metric

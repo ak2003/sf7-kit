@@ -1,11 +1,16 @@
+// PATH=$PATH:$GOPATH/bin/ protoc --go_out=plugins=grpc:. *.proto
 syntax = "proto3";
 option go_package = "protoc/model";
 package model;
 
-message ProductList {
+message ProductDetail {
   string id = 1;
   string productName = 2;
-  string categoryID = 3;
+  int64 price = 3;
+  int64 discPrice = 4;
+  int64 discPercent = 5;
+  repeated string gallery = 6;
+
 }
 
 message ProductId {
@@ -13,5 +18,5 @@ message ProductId {
 }
 
 service Products {
-  rpc List(ProductId) returns (ProductList) {}
+  rpc DetailProduct(ProductId) returns (ProductDetail) {}
 }

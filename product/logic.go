@@ -109,14 +109,23 @@ func (s ProductService) storeToEs(ctx context.Context, uid string, p Product, tx
 	return err
 }
 
-var localStorage *model.ProductList
+var localStorage *model.ProductDetail
 
-func (s ProductService) List(ctx context.Context, param *model.ProductId) (*model.ProductList, error) {
-	localStorage = new(model.ProductList)
-	localStorage = &model.ProductList{
-		Id:          "1",
-		ProductName: "Test",
-		CategoryID:  "1",
+func (s ProductService) DetailProduct(ctx context.Context, param *model.ProductId) (*model.ProductDetail, error) {
+	logDetail := logger.MakeLogEntry("product", "DetailProduct")
+	level.Info(logDetail).Log("param-id", param.Id)
+
+	dp, err := s.repository.DetailProduct(ctx, param.Id)
+	if err != nil {
+		level.Error(logDetail).Log("err", err)
+		return nil, err
+	}
+
+	localStorage = new(model.ProductDetail)
+	localStorage = &model.ProductDetail{
+		Id:          param.Id,
+		ProductName: dp.ProductName,
+		Gallery:     dp.Gallery,
 	}
 	return localStorage, nil
 }

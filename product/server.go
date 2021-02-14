@@ -26,10 +26,17 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints) http.Handler {
 	v1 := r.PathPrefix("/v1").Subrouter()
 
 
-	// User Registration
+	// Add Product
 	v1.Methods("POST").Path("/product").Handler(httpTransport.NewServer(
 		endpoints.CreateProduct,
 		decodeCreateProductReq,
+		response.EncodeJson,
+	))
+
+	// Detail Product
+	v1.Methods("GET").Path("/product/detail/{id}").Handler(httpTransport.NewServer(
+		endpoints.DetailProduct,
+		decodeDetailProductReq,
 		response.EncodeJson,
 	))
 
