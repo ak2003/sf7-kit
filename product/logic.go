@@ -32,15 +32,15 @@ func (s ProductService) CreateProduct(ctx context.Context, product interface{}) 
 		logCreate = logger.MakeLogEntry("product", "CreateProduct")
 		p         Product
 		r         CreateProductRequest
-		options   []Options
+		options     map[string]Options
 	)
 
 	r = product.(CreateProductRequest)
+	options = make(map[string]Options)
 
 	for _, index := range r.Options {
 		uidOpt, _ := uuid.NewV4()
-		index.Id = uidOpt.String()
-		options = append(options, index)
+		options[uidOpt.String()] = index
 	}
 
 	uid, _ := uuid.NewV4()

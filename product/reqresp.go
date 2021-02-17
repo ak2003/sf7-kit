@@ -11,7 +11,17 @@ import (
 
 type (
 	CreateProductRequest struct {
-		Product
+		ID          string        `json:"id,omitempty"`
+		ProductName string        `json:"product_name,omitempty"`
+		CategoryID  int           `json:"category_id,omitempty"`
+		BrandID     int           `json:"brand_id,omitempty"`
+		Description []Description `json:"description,omitempty"`
+		Price       int           `json:"price,omitempty"`
+		DiscPrice   int           `json:"disc_price,omitempty"`
+		DiscPercent int           `json:"disc_percent,omitempty"`
+		Options     []Options     `json:"options,omitempty"`
+		Gallery     []string      `json:"gallery,omitempty"`
+		SupplierID  int           `json:"supplier_id,omitempty"`
 	}
 )
 
