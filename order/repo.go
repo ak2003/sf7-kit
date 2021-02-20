@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"gt-kit/order/model"
 	"gt-kit/shared/utils/logger"
 
 	"github.com/go-kit/kit/log/level"
@@ -27,7 +28,7 @@ func NewRepo(db *sql.DB, logger log.Logger) Repository {
 	}
 }
 
-func (repo *repo) SaveShoppingCart(ctx context.Context, sc ShoppingCart) error {
+func (repo *repo) SaveShoppingCart(ctx context.Context, sc model.ShoppingCart) error {
 	i, err := json.Marshal(sc.Items)
 	if err != nil {
 		level.Error(logCreate).Log("err", err)
@@ -43,9 +44,9 @@ func (repo *repo) SaveShoppingCart(ctx context.Context, sc ShoppingCart) error {
 	return nil
 }
 
-func (repo *repo) GetShoppingCart(ctx context.Context, id string) (*ShoppingCart, error) {
+func (repo *repo) GetShoppingCart(ctx context.Context, id string) (*model.ShoppingCart, error) {
 	var (
-		sc ShoppingCart
+		sc model.ShoppingCart
 		item string
 	)
 
@@ -64,7 +65,7 @@ func (repo *repo) GetShoppingCart(ctx context.Context, id string) (*ShoppingCart
 	return &sc, nil
 }
 
-func (repo *repo) UpdateItemShoppingCart(ctx context.Context, cartId string, itemCart []ItemCart, total int64) error {
+func (repo *repo) UpdateItemShoppingCart(ctx context.Context, cartId string, itemCart []model.ItemCart, total int64) error {
 	ic, err := json.Marshal(itemCart)
 	if err != nil {
 		level.Error(logCreate).Log("err", err)
