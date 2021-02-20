@@ -1,0 +1,35 @@
+// PATH=$PATH:$GOPATH/bin/ protoc --go_out=plugins=grpc:. *.proto
+syntax = "proto3";
+option go_package = "protoc/model";
+package model;
+
+message ProductDetail {
+  string id = 1;
+  string productName = 2;
+  int64 price = 3;
+  int64 discPrice = 4;
+  int64 discPercent = 5;
+  repeated string gallery = 6;
+  repeated Options options = 7;
+
+}
+
+message Options {
+  string title = 1;
+  string type = 2;
+  repeated ItemOptions item_options = 3;
+  bool is_mandatory = 4;
+}
+
+message ItemOptions {
+  string value = 1;
+  string price = 2;
+}
+
+message ProductId {
+  string id = 1;
+}
+
+service Products {
+  rpc DetailProduct(ProductId) returns (ProductDetail) {}
+}

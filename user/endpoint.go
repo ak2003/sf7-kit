@@ -25,7 +25,7 @@ func makeCreateUserEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateUserRequest)
 		msg, err := s.CreateUser(ctx, req.Email, req.Password)
-		httpCode := http.StatusBadRequest
+		httpCode := http.StatusOK
 		if err != nil {
 			httpCode = http.StatusUnprocessableEntity
 		}

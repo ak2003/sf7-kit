@@ -5,14 +5,15 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
-	stdPrometheus "github.com/prometheus/client_golang/prometheus"
-	"gt-kit/shared/utils/config"
-	"gt-kit/user"
-
-	_ "github.com/lib/pq"
-
 	"github.com/go-kit/kit/log"
+	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
+	_ "github.com/lib/pq"
+	stdPrometheus "github.com/prometheus/client_golang/prometheus"
+	"google.golang.org/grpc"
+	"gt-kit/product"
+	"gt-kit/product/model/protoc/model"
+	"gt-kit/shared/utils/config"
+	"net"
 
 	"github.com/go-kit/kit/log/level"
 
@@ -20,8 +21,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-
 )
+
+var serviceName = "product"
 
 func init()  {
 	fmt.Println("Initiate Config")
@@ -36,7 +38,7 @@ func main() {
 		logger = log.NewLogfmtLogger(os.Stderr)
 		logger = log.NewSyncLogger(logger)
 		logger = log.With(logger,
-			"service", "user",
+			"service", serviceName,
 			"time:", log.DefaultTimestampUTC,
 			"caller", log.DefaultCaller,
 		)
@@ -50,13 +52,13 @@ func main() {
 		var err error
 		var (
 			dbDriver = "postgresql"
-			dbUser = config.GetDBUser(dbDriver)
-			dbPass = config.GetDBPass(dbDriver)
-			dbHost = config.GetDBHost(dbDriver)
-			dbPort = config.GetDBPort(dbDriver)
-			dbName = config.GetDBName(dbDriver)
+			dbUser   = config.GetDBUser(dbDriver)
+			dbPass   = config.GetDBPass(dbDriver)
+			dbHost   = config.GetDBHost(dbDriver)
+			dbPort   = config.GetDBPort(dbDriver)
+			dbName   = config.GetDBName(dbDriver)
 		)
-		var dbSource = "postgresql://"+ dbUser +":"+ dbPass +"@"+dbHost+":"+dbPort+"/"+ dbName+"?sslmode=disable"
+		var dbSource = "postgresql://" + dbUser + ":" + dbPass + "@" + dbHost + ":" + dbPort + "/" + dbName + "?sslmode=disable"
 		level.Info(logger).Log("dbInfo", dbSource)
 		db, err = sql.Open("postgres", dbSource)
 		if err != nil {
@@ -81,38 +83,52 @@ func main() {
 	fieldKeys := []string{"method", "error"}
 	requestCount := kitPrometheus.NewCounterFrom(stdPrometheus.CounterOpts{
 		Namespace: "api",
-		Subsystem: "user_service",
+		Subsystem: serviceName + "_service",
 		Name:      "request_count",
 		Help:      "Number of requests received.",
 	}, fieldKeys)
 	requestLatency := kitPrometheus.NewSummaryFrom(stdPrometheus.SummaryOpts{
 		Namespace: "api",
-		Subsystem: "user_service",
+		Subsystem: serviceName + "_service",
 		Name:      "request_latency_microseconds",
 		Help:      "Total duration of requests in microseconds.",
 	}, fieldKeys)
 	countResult := kitPrometheus.NewSummaryFrom(stdPrometheus.SummaryOpts{
 		Namespace: "api",
-		Subsystem: "user_service",
+		Subsystem: serviceName + "_service",
 		Name:      "count_result",
 		Help:      "The result of each count method.",
 	}, []string{}) // no fields here
 
-	var srv user.Service
+	var srv product.Service
 	{
-		repository := user.NewRepo(db, logger)
-		srv = user.NewService(repository, logger)
+		repository := product.NewRepo(db, logger)
+		srv = product.NewService(repository, logger)
 	}
 
-	srv = user.LoggingMiddleware{Logger: logger, Next: srv}
-	srv = user.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srv}
+	srv = product.LoggingMiddleware{Logger: logger, Next: srv}
+	srv = product.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srv}
 
-	endpoints := user.MakeEndpoints(srv)
+	endpoints := product.MakeEndpoints(srv)
+
 
 	go func() {
 		fmt.Println("listening on port", *httpAddr)
-		handler := user.NewHTTPServer(ctx, endpoints)
+		handler := product.NewHTTPServer(ctx, endpoints)
 		errs <- http.ListenAndServe(*httpAddr, handler)
+	}()
+
+	// Starting RPC Server
+	srvRpc := grpc.NewServer()
+	model.RegisterProductsServer(srvRpc, srv)
+
+	go func() {
+		level.Info(logger).Log("msg", "Starting RPC server at" + ":7000")
+		l, err := net.Listen("tcp", ":7000")
+		if err != nil {
+			level.Error(logger).Log("err", fmt.Errorf("could not listen to %s: %v", ":7000", err))
+		}
+		errs <- srvRpc.Serve(l)
 	}()
 
 	level.Error(logger).Log("exit", <-errs)
