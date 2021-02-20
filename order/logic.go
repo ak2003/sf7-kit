@@ -36,6 +36,9 @@ func serviceProduct() pModel.ProductsClient {
 	return pModel.NewProductsClient(conn)
 }
 
+// @todo Validate if product_id not exist
+// @todo Validate qty is empty
+// @todo Validate options mandatory not select
 func (s service) AddToCart(ctx context.Context, itemCart model.AddToCartRequest) (interface{}, error) {
 
 	var (

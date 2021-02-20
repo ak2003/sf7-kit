@@ -30,7 +30,7 @@ func makeAddToCartEndpoint(s Service) endpoint.Endpoint {
 			httpCode = http.StatusUnprocessableEntity
 		}
 		responseBody := response.Body{Message: http.StatusText(httpCode), Data: msg}
-		return response.CreateResponse{HttpCode: httpCode, RespBody: responseBody}, err
+		return response.CreateResponse{HttpCode: httpCode, RespBody: responseBody}, nil
 	}
 }
 
@@ -43,6 +43,6 @@ func makeDeleteItemCartEndpoint(s Service) endpoint.Endpoint {
 			httpCode = http.StatusUnprocessableEntity
 		}
 		responseBody := response.Body{Message: http.StatusText(httpCode), Data: msg}
-		return response.CreateResponse{HttpCode: httpCode, RespBody: responseBody}, err
+		return response.CreateResponse{HttpCode: httpCode, RespBody: responseBody}, nil
 	}
 }
