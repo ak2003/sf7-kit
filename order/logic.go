@@ -2,6 +2,7 @@ package order
 
 import (
 	"context"
+	"encoding/json"
 	"gt-kit/product/model/protoc/model"
 	"gt-kit/shared/utils/logger"
 	"strconv"
@@ -35,7 +36,14 @@ func serviceProduct() model.ProductsClient {
 }
 
 func (s service) AddToCart(ctx context.Context, itemCart AddToCartRequest) (interface{}, error) {
-	logLogin := logger.MakeLogEntry("order", "AddToCart")
+
+	var (
+		currentItems []ItemCart
+		total        int64
+		lastTotal    int64
+		oi           []OptionsItemCart
+		logLogin     = logger.MakeLogEntry("order", "AddToCart")
+	)
 
 	// Call service product to get information product
 	prod := serviceProduct()
@@ -45,28 +53,51 @@ func (s service) AddToCart(ctx context.Context, itemCart AddToCartRequest) (inte
 	}
 
 	// Read Item Cart from db
-	var (
-		currentItems []ItemCart
-		total        int64
-		lastTotal    int64
-	)
 	dataCart, _ := s.repository.GetShoppingCart(ctx, itemCart.CartID)
+
+	// Update shopping cart
 	if dataCart != nil {
 		for _, v := range dataCart.Items {
 			currentItems = append(currentItems, v)
 		}
 		lastTotal = dataCart.Total
 
-		// function
-		currentItems, total, _ = s.setItemCart(ctx, itemCart, res, lastTotal, currentItems)
+		oi, total = s.dataOptionsItems(ctx, itemCart, res, lastTotal)
+
+		oiString, err := json.Marshal(oi)
+		if err != nil {
+			level.Error(logCreate).Log("err", err)
+		}
+
+		updateQty := false
+		for i, v := range currentItems {
+			oicString, _ := json.Marshal(v.OptionsItemCart)
+			if v.ProductID == itemCart.ProductID && string(oiString) == string(oicString) {
+				v.Qty = v.Qty + itemCart.Qty
+				currentItems[i] = ItemCart{
+					ProductID:       v.ProductID,
+					Image:           v.Image,
+					Qty:             v.Qty,
+					Price:           v.Price,
+					OptionsItemCart: v.OptionsItemCart,
+				}
+				updateQty = true
+			}
+		}
+
+		if updateQty == false {
+			currentItems, total, _ = s.setItemCart(ctx, itemCart, res, lastTotal, currentItems)
+		}
+
 		err = s.repository.UpdateItemShoppingCart(ctx, itemCart.CartID, currentItems, total)
 		if err != nil {
 			level.Error(logLogin).Log("err", err)
 			return nil, err
 		}
-		return res, nil
+		return currentItems, nil
 	}
 
+	// Insert new shopping cart
 	currentItems, total, _ = s.setItemCart(ctx, itemCart, res, lastTotal, currentItems)
 
 	// save cart
@@ -83,28 +114,24 @@ func (s service) AddToCart(ctx context.Context, itemCart AddToCartRequest) (inte
 		return nil, err
 	}
 
-	return res, nil
+	return currentItems, nil
 }
 
 func (s service) setItemCart(ctx context.Context, itemCart AddToCartRequest, res *model.ProductDetail, lastTotal int64, currentItems []ItemCart) ([]ItemCart, int64, error) {
-	var (
-		oi    []OptionsItemCart
-		total int64
-	)
 
-	total = res.Price + lastTotal
-	for _, v := range itemCart.Options {
-		opt := res.Options[v.IndexOption]
-		ops := opt.ItemOptions[v.IndexSelected]
-		// convert to int64
-		price, _ := strconv.ParseInt(ops.Price, 10, 64)
-		oi = append(oi, OptionsItemCart{
-			Title:        opt.Title,
-			ItemSelected: ops.Value,
-			Price:        price,
-		})
+	oi, total := s.dataOptionsItems(ctx, itemCart, res, lastTotal)
 
-		total = total + price
+	// convert string to optionItemCart
+	oiString, err := json.Marshal(oi)
+	if err != nil {
+		level.Error(logCreate).Log("err", err)
+	}
+
+	for _, v := range currentItems {
+		oicString, _ := json.Marshal(v.OptionsItemCart)
+		if v.ProductID == itemCart.ProductID && string(oiString) == string(oicString) {
+			v.Qty = v.Qty + itemCart.Qty
+		}
 	}
 
 	currentItems = append(currentItems, ItemCart{
@@ -116,4 +143,31 @@ func (s service) setItemCart(ctx context.Context, itemCart AddToCartRequest, res
 	})
 
 	return currentItems, total, nil
+}
+
+func (s service) dataOptionsItems(ctx context.Context, itemCart AddToCartRequest, res *model.ProductDetail, lastTotal int64) ([]OptionsItemCart, int64) {
+	var (
+		oi    []OptionsItemCart
+		total int64
+	)
+
+	total = res.Price + lastTotal
+
+	// Get OptionsItems
+	for _, v := range itemCart.Options {
+		opt := res.Options[v.IndexOption]
+		ops := opt.ItemOptions[v.IndexSelected]
+		// convert to int64
+		price, _ := strconv.ParseInt(ops.Price, 10, 64)
+
+		oi = append(oi, OptionsItemCart{
+			Title:        opt.Title,
+			ItemSelected: ops.Value,
+			Price:        price,
+		})
+
+		total = total + price
+	}
+
+	return oi, total
 }
