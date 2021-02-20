@@ -10,7 +10,20 @@ message ProductDetail {
   int64 discPrice = 4;
   int64 discPercent = 5;
   repeated string gallery = 6;
+  repeated Options options = 7;
 
+}
+
+message Options {
+  string title = 1;
+  string type = 2;
+  repeated ItemOptions item_options = 3;
+  bool is_mandatory = 4;
+}
+
+message ItemOptions {
+  string value = 1;
+  string price = 2;
 }
 
 message ProductId {

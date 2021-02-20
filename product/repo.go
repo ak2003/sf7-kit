@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"gt-kit/product/model/protoc/model"
 	"gt-kit/shared/utils/logger"
 
@@ -14,7 +12,6 @@ import (
 	"github.com/go-kit/kit/log"
 )
 
-var RepoErr = errors.New("unable to handle repo request")
 var logCreate = logger.MakeLogEntry("product", "RepoProduct")
 
 type repo struct {
@@ -80,18 +77,25 @@ func (repo *repo) DetailProduct(ctx context.Context, id string) (*model.ProductD
 		p model.ProductDetail
 		gallery string
 		options string
-		a interface{}
 	)
 
-	err := repo.db.QueryRow("SELECT id,name,gallery,options FROM mt_product WHERE id=$1", id).Scan(&p.Id,&p.ProductName,&gallery, &options)
+	err := repo.db.QueryRow("SELECT id,name,gallery,options, price::money::numeric::int8 FROM mt_product WHERE id=$1", id).Scan(&p.Id,&p.ProductName,&gallery, &options, &p.Price)
 	if err != nil {
 		level.Error(logCreate).Log("err", err)
 		return nil, err
 	}
-	json.Unmarshal([]byte(gallery), &p.Gallery)
-	json.Unmarshal([]byte(options), &a)
-	fmt.Printf("%+v", a)
-	//json.Unmarshal([]byte(options), &p.Gallery)
+
+	err = json.Unmarshal([]byte(gallery), &p.Gallery)
+	if err != nil {
+		level.Error(logCreate).Log("err", err)
+		return nil, err
+	}
+
+	err = json.Unmarshal([]byte(options), &p.Options)
+	if err != nil {
+		level.Error(logCreate).Log("err", err)
+		return nil, err
+	}
 	return &p, nil
 }
 

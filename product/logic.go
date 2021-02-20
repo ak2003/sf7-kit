@@ -32,16 +32,15 @@ func (s ProductService) CreateProduct(ctx context.Context, product interface{}) 
 		logCreate = logger.MakeLogEntry("product", "CreateProduct")
 		p         Product
 		r         CreateProductRequest
-		options     map[string]Options
 	)
 
 	r = product.(CreateProductRequest)
-	options = make(map[string]Options)
-
-	for _, index := range r.Options {
-		uidOpt, _ := uuid.NewV4()
-		options[uidOpt.String()] = index
-	}
+	//options = make(map[string]Options)
+	//
+	//for _, index := range r.Options {
+	//	uidOpt, _ := uuid.NewV4()
+	//	options[uidOpt.String()] = index
+	//}
 
 	uid, _ := uuid.NewV4()
 	p = Product{
@@ -53,7 +52,7 @@ func (s ProductService) CreateProduct(ctx context.Context, product interface{}) 
 		Price:       r.Price,
 		DiscPrice:   r.DiscPrice,
 		DiscPercent: r.DiscPercent,
-		Options:     options,
+		Options:     r.Options,
 		Gallery:     r.Gallery,
 		SupplierID:  r.SupplierID,
 	}
@@ -109,8 +108,6 @@ func (s ProductService) storeToEs(ctx context.Context, uid string, p Product, tx
 	return err
 }
 
-var localStorage *model.ProductDetail
-
 func (s ProductService) DetailProduct(ctx context.Context, param *model.ProductId) (*model.ProductDetail, error) {
 	logDetail := logger.MakeLogEntry("product", "DetailProduct")
 	level.Info(logDetail).Log("param-id", param.Id)
@@ -121,11 +118,13 @@ func (s ProductService) DetailProduct(ctx context.Context, param *model.ProductI
 		return nil, err
 	}
 
-	localStorage = new(model.ProductDetail)
-	localStorage = &model.ProductDetail{
+	pd := &model.ProductDetail{
 		Id:          param.Id,
 		ProductName: dp.ProductName,
+		Price:       dp.Price,
 		Gallery:     dp.Gallery,
+		Options:     dp.Options,
 	}
-	return localStorage, nil
+
+	return pd, nil
 }

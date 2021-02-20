@@ -15,8 +15,8 @@ type (
 	}
 
 	Options struct {
-		Id    string
-		Value string
+		IndexOption   int `json:"i_option,omitempty"`
+		IndexSelected int `json:"i_selected,omitempty"`
 	}
 )
 
