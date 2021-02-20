@@ -36,6 +36,11 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints) http.Handler {
 	// Cart List
 
 	// Delete cart by product_id
+	v1.Methods("DELETE").Path("/order/cart").Handler(httpTransport.NewServer(
+		endpoints.DeleteItemCart,
+		decodeDelItemCartReq,
+		response.EncodeJson,
+	))
 
 	// Empty Cart (Delete by cartID)
 

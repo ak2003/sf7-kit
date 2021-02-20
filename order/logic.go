@@ -3,14 +3,16 @@ package order
 import (
 	"context"
 	"encoding/json"
-	"gt-kit/product/model/protoc/model"
-	"gt-kit/shared/utils/logger"
-	"strconv"
-
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	"google.golang.org/grpc"
+	"gt-kit/order/helper"
+	"gt-kit/order/model"
+	pModel "gt-kit/product/model/protoc/model"
+	"gt-kit/shared/utils/logger"
 )
+
+var logOrder = logger.MakeLogEntry("order", "serviceProduct")
 
 type service struct {
 	repository Repository
@@ -24,32 +26,30 @@ func NewService(rep Repository, logger log.Logger) Service {
 	}
 }
 
-func serviceProduct() model.ProductsClient {
+func serviceProduct() pModel.ProductsClient {
 	port := ":7000"
-	logLogin := logger.MakeLogEntry("order", "serviceProduct")
 	conn, err := grpc.Dial(port, grpc.WithInsecure())
 	if err != nil {
-		level.Error(logLogin).Log("could not connect to"+port, err)
+		level.Error(logOrder).Log("could not connect to"+port, err)
 	}
 
-	return model.NewProductsClient(conn)
+	return pModel.NewProductsClient(conn)
 }
 
-func (s service) AddToCart(ctx context.Context, itemCart AddToCartRequest) (interface{}, error) {
+func (s service) AddToCart(ctx context.Context, itemCart model.AddToCartRequest) (interface{}, error) {
 
 	var (
-		currentItems []ItemCart
+		currentItems []model.ItemCart
 		total        int64
 		lastTotal    int64
-		oi           []OptionsItemCart
-		logLogin     = logger.MakeLogEntry("order", "AddToCart")
+		oi           []model.OptionsItemCart
 	)
 
 	// Call service product to get information product
 	prod := serviceProduct()
-	res, err := prod.DetailProduct(context.Background(), &model.ProductId{Id: itemCart.ProductID})
+	res, err := prod.DetailProduct(context.Background(), &pModel.ProductId{Id: itemCart.ProductID})
 	if err != nil {
-		level.Error(logLogin).Log("err", err.Error())
+		level.Error(logOrder).Log("err", err.Error())
 	}
 
 	// Read Item Cart from db
@@ -62,11 +62,11 @@ func (s service) AddToCart(ctx context.Context, itemCart AddToCartRequest) (inte
 		}
 		lastTotal = dataCart.Total
 
-		oi, total = s.dataOptionsItems(ctx, itemCart, res, lastTotal)
+		oi, total = helper.DataOptionsItems(ctx, itemCart, res, lastTotal)
 
 		oiString, err := json.Marshal(oi)
 		if err != nil {
-			level.Error(logCreate).Log("err", err)
+			level.Error(logOrder).Log("err", err)
 		}
 
 		updateQty := false
@@ -74,7 +74,7 @@ func (s service) AddToCart(ctx context.Context, itemCart AddToCartRequest) (inte
 			oicString, _ := json.Marshal(v.OptionsItemCart)
 			if v.ProductID == itemCart.ProductID && string(oiString) == string(oicString) {
 				v.Qty = v.Qty + itemCart.Qty
-				currentItems[i] = ItemCart{
+				currentItems[i] = model.ItemCart{
 					ProductID:       v.ProductID,
 					Image:           v.Image,
 					Qty:             v.Qty,
@@ -86,22 +86,22 @@ func (s service) AddToCart(ctx context.Context, itemCart AddToCartRequest) (inte
 		}
 
 		if updateQty == false {
-			currentItems, total, _ = s.setItemCart(ctx, itemCart, res, lastTotal, currentItems)
+			currentItems, total, _ = helper.SetItemCart(ctx, itemCart, res, lastTotal, currentItems)
 		}
 
 		err = s.repository.UpdateItemShoppingCart(ctx, itemCart.CartID, currentItems, total)
 		if err != nil {
-			level.Error(logLogin).Log("err", err)
+			level.Error(logOrder).Log("err", err)
 			return nil, err
 		}
 		return currentItems, nil
 	}
 
 	// Insert new shopping cart
-	currentItems, total, _ = s.setItemCart(ctx, itemCart, res, lastTotal, currentItems)
+	currentItems, total, _ = helper.SetItemCart(ctx, itemCart, res, lastTotal, currentItems)
 
 	// save cart
-	sc := ShoppingCart{
+	sc := model.ShoppingCart{
 		ID:       itemCart.CartID,
 		UserID:   "6993fad7-dc54-40ba-bca2-aaa2ac3854e0",
 		Items:    currentItems,
@@ -110,64 +110,51 @@ func (s service) AddToCart(ctx context.Context, itemCart AddToCartRequest) (inte
 	}
 	err = s.repository.SaveShoppingCart(ctx, sc)
 	if err != nil {
-		level.Error(logLogin).Log("err", err)
+		level.Error(logOrder).Log("err", err)
 		return nil, err
 	}
 
 	return currentItems, nil
 }
 
-func (s service) setItemCart(ctx context.Context, itemCart AddToCartRequest, res *model.ProductDetail, lastTotal int64, currentItems []ItemCart) ([]ItemCart, int64, error) {
-
-	oi, total := s.dataOptionsItems(ctx, itemCart, res, lastTotal)
-
-	// convert string to optionItemCart
-	oiString, err := json.Marshal(oi)
+func (s service) DeleteItemCart(ctx context.Context, param model.DeleteItemCartRequest) (*[]model.ItemCart, error) {
+	// Get Data Item Cart
+	dataCart, err := s.repository.GetShoppingCart(ctx, param.CartID)
 	if err != nil {
-		level.Error(logCreate).Log("err", err)
+		level.Error(logOrder).Log("err", err)
+		return nil, err
 	}
 
-	for _, v := range currentItems {
-		oicString, _ := json.Marshal(v.OptionsItemCart)
-		if v.ProductID == itemCart.ProductID && string(oiString) == string(oicString) {
-			v.Qty = v.Qty + itemCart.Qty
+	var (
+		itemCart []model.ItemCart
+		tPrice int64
+		tPriceOption int64
+	)
+
+	tPrice = 0
+	tPriceOption = 0
+	for i, v := range dataCart.Items {
+
+		// get price itemOptions
+		if i == param.IdxItemCart {
+			for _, y := range v.OptionsItemCart {
+				tPriceOption = tPriceOption + y.Price
+			}
+			tPrice = v.Price + tPriceOption
+		}
+
+		if i != param.IdxItemCart {
+			itemCart = append(itemCart, v)
 		}
 	}
 
-	currentItems = append(currentItems, ItemCart{
-		ProductID:       itemCart.ProductID,
-		Image:           res.Gallery[0],
-		Qty:             itemCart.Qty,
-		Price:           res.Price,
-		OptionsItemCart: oi,
-	})
+	total := dataCart.Total - tPrice
 
-	return currentItems, total, nil
-}
-
-func (s service) dataOptionsItems(ctx context.Context, itemCart AddToCartRequest, res *model.ProductDetail, lastTotal int64) ([]OptionsItemCart, int64) {
-	var (
-		oi    []OptionsItemCart
-		total int64
-	)
-
-	total = res.Price + lastTotal
-
-	// Get OptionsItems
-	for _, v := range itemCart.Options {
-		opt := res.Options[v.IndexOption]
-		ops := opt.ItemOptions[v.IndexSelected]
-		// convert to int64
-		price, _ := strconv.ParseInt(ops.Price, 10, 64)
-
-		oi = append(oi, OptionsItemCart{
-			Title:        opt.Title,
-			ItemSelected: ops.Value,
-			Price:        price,
-		})
-
-		total = total + price
+	err = s.repository.UpdateItemShoppingCart(ctx, param.CartID, itemCart, total)
+	if err != nil {
+		level.Error(logOrder).Log("err", err)
+		return nil, err
 	}
 
-	return oi, total
+	return &itemCart, nil
 }
