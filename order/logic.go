@@ -42,7 +42,7 @@ func (s service) AddToCart(ctx context.Context, itemCart AddToCartRequest) (inte
 		total        int64
 		lastTotal    int64
 		oi           []OptionsItemCart
-		logLogin =  logger.MakeLogEntry("order", "AddToCart")
+		logLogin     = logger.MakeLogEntry("order", "AddToCart")
 	)
 
 	// Call service product to get information product
@@ -144,7 +144,6 @@ func (s service) setItemCart(ctx context.Context, itemCart AddToCartRequest, res
 
 	return currentItems, total, nil
 }
-
 
 func (s service) dataOptionsItems(ctx context.Context, itemCart AddToCartRequest, res *model.ProductDetail, lastTotal int64) ([]OptionsItemCart, int64) {
 	var (
