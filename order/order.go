@@ -5,8 +5,6 @@ import (
 	"gt-kit/order/model"
 )
 
-
-
 type Repository interface {
 	SaveShoppingCart(ctx context.Context, sc model.ShoppingCart) error
 	GetShoppingCart(ctx context.Context, id string) (*model.ShoppingCart, error)

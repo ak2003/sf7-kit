@@ -161,3 +161,7 @@ func (s service) DeleteItemCart(ctx context.Context, param model.DeleteItemCartR
 
 	return &itemCart, nil
 }
+
+func (s service) logicTest(ctx context.Context, a int) int {
+	return 0
+}
