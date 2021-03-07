@@ -27,7 +27,7 @@ var serviceName = "product"
 
 func init()  {
 	fmt.Println("Initiate Config")
-	config.SetConfigFile("config", "user/config", "json")
+	config.SetConfigFile("config", serviceName + "/config", "json")
 }
 
 func main() {
