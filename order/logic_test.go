@@ -26,7 +26,7 @@ func TestDeleteItemCart(t *testing.T) {
 	}
 	mk := &mocks.Repository{}
 	s := service{repository: mk}
-	// mock variable anything
+	// mock variable anything, comment 2, comment 3
 	mk.On("GetShoppingCart", mock.Anything, mock.Anything).Return(nil, errors.New("test")).Once()
 
 	_, err := s.DeleteItemCart(context.Background(), param)
