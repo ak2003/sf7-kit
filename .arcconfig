@@ -1,0 +1,14 @@
+{
+  "project.name": "MW-KIT Projects",
+  "history.immutable": false,
+  "repository.callsign": "GOMWKIT",
+  "phabricator.uri" : "http://diff2.machtwatch.net/",
+  "load" : [
+    "scripts/arcanist-go"
+  ],
+  "arcanist_configuration": "ArcanistGoConfiguration",
+  "unit.engine": "GoTestEngine",
+  "unit.go.race": "false",
+  "arc.lint.cache": true,
+  "differential.sticky-accept" : false
+}

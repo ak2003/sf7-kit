@@ -1,0 +1,65 @@
+{
+  "linters": {
+    "chmod": {
+      "type": "chmod"
+    },
+    "filename": {
+      "type": "filename",
+      "exclude": [
+        "(vendor)"
+      ]
+    },
+    "gofmt": {
+      "include": [
+        "(\\.go$)"
+      ],
+      "type": "gofmt",
+      "exclude": [
+        "(vendor)"
+      ]
+    },
+    "golint": {
+      "include": [
+        "(\\.go$)"
+      ],
+      "type": "golint",
+      "exclude": [
+        "(vendor)"
+      ]
+    },
+    "json": {
+      "include": [
+        "(^\\.arcconfig$)",
+        "(^\\.arclint$)",
+        "(\\.json$)"
+      ],
+      "type": "json",
+      "exclude": [
+        "(vendor)"
+      ]
+    },
+    "merge-conflict": {
+      "type": "merge-conflict",
+      "exclude": [
+        "(vendor)"
+      ]
+    },
+    "spelling": {
+      "type": "spelling",
+      "exclude": [
+        "(vendor)"
+      ]
+    },
+    "text": {
+      "exclude": [
+        "(\\.go$)",
+        "(^Makefile$)",
+        "(^.travis.yml$)",
+        "(vendor)",
+        "(go\\.mod$)",
+        "(go\\.sum$)"
+      ],
+      "type": "text"
+    }
+  }
+}
