@@ -25,15 +25,15 @@ gandalfLink=
 echo ---
 echo "= $1 ="
 echo
-echo "(NOTE) Release: [[ https://gitlab.myteksi.net/gophers/go/tags/$V1 | $V1 ]]"
+echo "(NOTE) Release: [[ https://bitbucket.org/germentop/gt-kit/commits/tag/$V1 | $V1 ]]"
 echo
-echo "(WARNING) Rollback: [[ https://gitlab.myteksi.net/gophers/go/tags/$V2 | $V2 ]]"
+echo "(WARNING) Rollback: [[ https://bitbucket.org/germentop/gt-kit/commits/tag/$V2 | $V2 ]]"
 echo
 if [[ $V1 = "" || $V2 = "" ]]; then
   echo "Error: failed to get git tags, if you are sure the tag is correct, it must due to you didn't rebase the master to get the latest tag"
   exit 1
 fi
-cd "$GOPATH"/src/gitlab.myteksi.net/gophers/go/grab-pay || exit
+cd "$GOPATH"/src/gt-kit || exit
 if [[ $(git tag -l $V1) == '' ]]; then
     echo "$V1"" isn't in your local branch, if you are sure the tag is correct, it must due to you didn't rebase the master to get the latest tag"
     exit
