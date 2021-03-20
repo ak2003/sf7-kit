@@ -47,6 +47,7 @@ func NewService(rep Repository, logger log.Logger) Service {
 // CreateProduct add new comment 19
 // CreateProduct add new comment 20
 // CreateProduct add new comment 21
+// CreateProduct add new comment 22
 func (s ProductService) CreateProduct(ctx context.Context, product interface{}) (interface{}, error) {
 
 	var (
