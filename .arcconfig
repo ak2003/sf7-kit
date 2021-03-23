@@ -1,7 +1,7 @@
 {
   "project.name": "GT-KIT Projects",
   "history.immutable": false,
-  "repository.callsign": "TESTREPO",
+  "repository.callsign": "GTKIT",
   "phabricator.uri" : "http://phabricator.local",
   "load" : [
     "scripts/arcanist-go"
