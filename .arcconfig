@@ -11,5 +11,5 @@
   "unit.go.race": "false",
   "arc.lint.cache": true,
   "differential.sticky-accept" : false,
-  "arc.land.remote.default" : "development"
+  "arc.land.onto.default" : "development"
 }
