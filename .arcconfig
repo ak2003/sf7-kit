@@ -10,7 +10,5 @@
   "unit.engine": "GoTestEngine",
   "unit.go.race": "false",
   "arc.lint.cache": true,
-  "differential.sticky-accept" : false,
-  "arc.land.onto-remote" : "origin",
-  "arc.land.onto.default" : "development"
+  "differential.sticky-accept" : false
 }
