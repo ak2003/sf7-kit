@@ -26,38 +26,6 @@ func NewService(rep Repository, logger log.Logger) Service {
 	}
 }
 
-// CreateProduct add new comment 1
-// CreateProduct add new comment 2
-// CreateProduct add new comment 3
-// CreateProduct add new comment 4
-// CreateProduct add new comment 5
-// CreateProduct add new comment 6
-// CreateProduct add new comment 7
-// CreateProduct add new comment 8
-// CreateProduct add new comment 9
-// CreateProduct add new comment 10
-// CreateProduct add new comment 11
-// CreateProduct add new comment 12
-// CreateProduct add new comment 13
-// CreateProduct add new comment 14
-// CreateProduct add new comment 15
-// CreateProduct add new comment 16
-// CreateProduct add new comment 17
-// CreateProduct add new comment 18
-// CreateProduct add new comment 19
-// CreateProduct add new comment 20
-// CreateProduct add new comment 21
-// CreateProduct add new comment 22
-// CreateProduct add new comment 23
-// CreateProduct add new comment 24
-// CreateProduct add new comment 25
-// CreateProduct add new comment 26
-// CreateProduct add new comment 27
-// CreateProduct add new comment 28
-// CreateProduct add new comment 29
-// CreateProduct add new comment 30
-// CreateProduct add new comment 31
-// CreateProduct add new comment 32
 func (s ProductService) CreateProduct(ctx context.Context, product interface{}) (interface{}, error) {
 
 	var (
