@@ -200,7 +200,7 @@ CREATE TABLE public.tr_shoping_cart (
 );
 
 
-ALTER TABLE public.tr_shoping_cart OWNER TO arikarniawan;
+ALTER TABLE public.tr_shopping_cart OWNER TO arikarniawan;
 
 --
 -- Name: tr_shoping_checkout; Type: TABLE; Schema: public; Owner: arikarniawan

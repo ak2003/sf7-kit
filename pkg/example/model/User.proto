@@ -1,0 +1,11 @@
+syntax = "proto3";
+option go_package = "protoc/model";
+package model;
+
+message UserRequest {
+  string UserId = 1;
+}
+
+message UserResponse {
+  string Name = 1;
+}

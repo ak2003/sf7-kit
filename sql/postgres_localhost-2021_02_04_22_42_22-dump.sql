@@ -200,7 +200,7 @@ CREATE TABLE public.tr_shoping_cart (
 );
 
 
-ALTER TABLE public.tr_shoping_cart OWNER TO arikarniawan;
+ALTER TABLE public.tr_shopping_cart OWNER TO arikarniawan;
 
 --
 -- Name: tr_shoping_checkout; Type: TABLE; Schema: public; Owner: arikarniawan
@@ -364,7 +364,7 @@ COPY public.tr_payment_method (id, name, provider, created_at, updated_at, delet
 -- Data for Name: tr_shoping_cart; Type: TABLE DATA; Schema: public; Owner: arikarniawan
 --
 
-COPY public.tr_shoping_cart (id, user_id, items, total, created_at, meta_data, updated_at, deleted_at, status) FROM stdin;
+COPY public.tr_shopping_cart (id, user_id, items, total, created_at, meta_data, updated_at, deleted_at, status) FROM stdin;
 \.
 
 
