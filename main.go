@@ -81,23 +81,24 @@ func main() {
 	fieldKeys := []string{"method", "error"}
 	requestCount := kitPrometheus.NewCounterFrom(stdPrometheus.CounterOpts{
 		Namespace: "api",
-		Subsystem: "example_service",
+		Subsystem: "sf7_service",
 		Name:      "request_count",
 		Help:      "Number of requests received.",
 	}, fieldKeys)
 	requestLatency := kitPrometheus.NewSummaryFrom(stdPrometheus.SummaryOpts{
 		Namespace: "api",
-		Subsystem: "example_service",
+		Subsystem: "sf7_service",
 		Name:      "request_latency_microseconds",
 		Help:      "Total duration of requests in microseconds.",
 	}, fieldKeys)
 	countResult := kitPrometheus.NewSummaryFrom(stdPrometheus.SummaryOpts{
 		Namespace: "api",
-		Subsystem: "example_service",
+		Subsystem: "sf7_service",
 		Name:      "count_result",
 		Help:      "The result of each count method.",
 	}, []string{}) // no fields here
 
+	// example package
 	var srv example.Service
 	{
 		repository := example.NewRepo(database.NewDB(logger))
@@ -109,6 +110,7 @@ func main() {
 
 	endpoints := example.MakeEndpoints(srv)
 
+	// user package
 	var srvUser user.Service
 	{
 		repository := user.NewRepo(db, logger)
