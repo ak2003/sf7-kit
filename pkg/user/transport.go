@@ -15,7 +15,7 @@ import (
 	"github.com/urfave/negroni"
 )
 
-func NewHTTPServer(ctx context.Context, endpoints Endpoints) http.Handler {
+func NewHTTPServer(ctx context.Context, endpoints Endpoints, r *mux.Router) *mux.Router {
 
 	mw := jwtMiddleware.New(jwtMiddleware.Options{
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
@@ -24,7 +24,7 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints) http.Handler {
 		SigningMethod: jwt.SigningMethodHS256,
 	})
 
-	r := mux.NewRouter()
+	//r := mux.NewRouter()
 	r.Use(commonMiddleware)
 
 	v1 := r.PathPrefix("/v1").Subrouter()

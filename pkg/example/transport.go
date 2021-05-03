@@ -2,17 +2,15 @@ package example
 
 import (
 	"context"
-	"gt-kit/shared/response"
-	"net/http"
-
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/transport"
 	httpTransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"gt-kit/shared/response"
 )
 
-func NewHTTPServer(_ context.Context, endpoints Endpoints) http.Handler {
+func NewHTTPServer(_ context.Context, endpoints Endpoints) *mux.Router {
 	var logger log.Logger
 	opts := []httpTransport.ServerOption{
 		httpTransport.ServerErrorHandler(transport.NewLogErrorHandler(logger)),

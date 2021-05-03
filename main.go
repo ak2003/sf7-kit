@@ -8,8 +8,10 @@ import (
 	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
 	stdPrometheus "github.com/prometheus/client_golang/prometheus"
+	"gt-kit/pkg/example"
 	"gt-kit/pkg/user"
 	"gt-kit/shared/utils/config"
+	"gt-kit/shared/utils/database"
 
 	"github.com/go-kit/kit/log"
 
@@ -23,11 +25,11 @@ import (
 
 func init()  {
 	fmt.Println("Initiate Config")
-	config.SetConfigFile("config", "pkg/user/config", "json")
+	config.SetConfigFile("config", "pkg/example/config", "json")
 }
 
 func main() {
-
+	// @todo port get from config
 	var httpAddr = flag.String("http", ":8080", "http listen address")
 	var logger log.Logger
 	{
@@ -79,37 +81,49 @@ func main() {
 	fieldKeys := []string{"method", "error"}
 	requestCount := kitPrometheus.NewCounterFrom(stdPrometheus.CounterOpts{
 		Namespace: "api",
-		Subsystem: "user_service",
+		Subsystem: "example_service",
 		Name:      "request_count",
 		Help:      "Number of requests received.",
 	}, fieldKeys)
 	requestLatency := kitPrometheus.NewSummaryFrom(stdPrometheus.SummaryOpts{
 		Namespace: "api",
-		Subsystem: "user_service",
+		Subsystem: "example_service",
 		Name:      "request_latency_microseconds",
 		Help:      "Total duration of requests in microseconds.",
 	}, fieldKeys)
 	countResult := kitPrometheus.NewSummaryFrom(stdPrometheus.SummaryOpts{
 		Namespace: "api",
-		Subsystem: "user_service",
+		Subsystem: "example_service",
 		Name:      "count_result",
 		Help:      "The result of each count method.",
 	}, []string{}) // no fields here
 
-	var srv user.Service
+	var srv example.Service
 	{
-		repository := user.NewRepo(db, logger)
-		srv = user.NewService(repository)
+		repository := example.NewRepo(database.NewDB(logger))
+		srv = example.NewService(repository)
 	}
 
-	srv = user.LoggingMiddleware{Logger: logger, Next: srv}
-	srv = user.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srv}
+	srv = example.LoggingMiddleware{Next: srv}
+	srv = example.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srv}
 
-	endpoints := user.MakeEndpoints(srv)
+	endpoints := example.MakeEndpoints(srv)
+
+	var srvUser user.Service
+	{
+		repository := user.NewRepo(db, logger)
+		srvUser = user.NewService(repository)
+	}
+
+	srvUser = user.LoggingMiddleware{Logger: logger, Next: srvUser}
+	srvUser = user.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srvUser}
+
+	endpointsUser := user.MakeEndpoints(srvUser)
 
 	go func() {
 		fmt.Println("listening on port", *httpAddr)
-		handler := user.NewHTTPServer(ctx, endpoints)
+		handler := example.NewHTTPServer(ctx, endpoints)
+		handler = user.NewHTTPServer(ctx, endpointsUser, handler)
 		errs <- http.ListenAndServe(*httpAddr, handler)
 	}()
 

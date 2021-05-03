@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/go-kit/kit/log"
 	model2 "gt-kit/pkg/user/model/user"
+	"gt-kit/shared/utils/logger"
 )
 
 var RepoErr = errors.New("unable to handle repo request")
@@ -65,7 +66,7 @@ func (repo *repo) LoginUser(ctx context.Context, username string) (string, strin
 	)
 	err := repo.db.QueryRow("SELECT email, password FROM mt_user WHERE email=$1", username).Scan(&email, &password)
 	if err != nil {
-		//level.Error(logCreate).Log("err", err)
+		logger.Error(nil, err)
 		return "", "", RepoErr
 	}
 
