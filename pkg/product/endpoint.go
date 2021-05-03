@@ -2,7 +2,7 @@ package product
 
 import (
 	"context"
-	model2 "gt-kit/pkg/product/model/protoc/model"
+	"gt-kit/pkg/product/model/protoc/model"
 	"gt-kit/shared/response"
 	"net/http"
 
@@ -11,8 +11,6 @@ import (
 
 type Endpoints struct {
 	CreateProduct endpoint.Endpoint
-	//GetUser    endpoint.Endpoint
-	//LoginUser  endpoint.Endpoint
 	DetailProduct endpoint.Endpoint
 }
 
@@ -38,7 +36,7 @@ func makeCreateProductEndpoint(s Service) endpoint.Endpoint {
 
 func makeDetailProductEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(model2.ProductId)
+		req := request.(model.ProductId)
 		msg, err := s.DetailProduct(ctx, &req)
 		httpCode := http.StatusOK
 		if err != nil {

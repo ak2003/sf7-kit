@@ -2,14 +2,14 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"flag"
 	"fmt"
 	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
 	stdPrometheus "github.com/prometheus/client_golang/prometheus"
-	"gt-kit/pkg/order"
+	"gt-kit/pkg/example"
 	"gt-kit/shared/utils/config"
+	"gt-kit/shared/utils/database"
 
 	"github.com/go-kit/kit/log"
 
@@ -21,22 +21,20 @@ import (
 	"syscall"
 )
 
-var serviceName = "order"
-
 func init()  {
 	fmt.Println("Initiate Config")
-	config.SetConfigFile("config", "pkg/" + serviceName + "/config", "json")
+	config.SetConfigFile("config", "pkg/example/config", "json")
 }
 
 func main() {
-
-	var httpAddr = flag.String("http", ":7070", "http listen address")
+	// @todo port get from config
+	var httpAddr = flag.String("http", ":8080", "http listen address")
 	var logger log.Logger
 	{
 		logger = log.NewLogfmtLogger(os.Stderr)
 		logger = log.NewSyncLogger(logger)
 		logger = log.With(logger,
-			"service", serviceName,
+			"service", "user",
 			"time:", log.DefaultTimestampUTC,
 			"caller", log.DefaultCaller,
 		)
@@ -44,26 +42,6 @@ func main() {
 
 	level.Info(logger).Log("msg", "service started")
 	defer level.Info(logger).Log("msg", "service ended")
-
-	var db *sql.DB
-	{
-		var err error
-		var (
-			dbDriver = "postgresql"
-			dbUser = config.GetDBUser(dbDriver)
-			dbPass = config.GetDBPass(dbDriver)
-			dbHost = config.GetDBHost(dbDriver)
-			dbPort = config.GetDBPort(dbDriver)
-			dbName = config.GetDBName(dbDriver)
-		)
-		var dbSource = "postgresql://"+ dbUser +":"+ dbPass +"@"+dbHost+":"+dbPort+"/"+ dbName+"?sslmode=disable"
-		db, err = sql.Open("postgres", dbSource)
-		if err != nil {
-			level.Error(logger).Log("exit", err)
-			os.Exit(-1)
-		}
-
-	}
 
 	flag.Parse()
 	ctx := context.Background()
@@ -80,37 +58,37 @@ func main() {
 	fieldKeys := []string{"method", "error"}
 	requestCount := kitPrometheus.NewCounterFrom(stdPrometheus.CounterOpts{
 		Namespace: "api",
-		Subsystem: serviceName + "_service",
+		Subsystem: "example_service",
 		Name:      "request_count",
 		Help:      "Number of requests received.",
 	}, fieldKeys)
 	requestLatency := kitPrometheus.NewSummaryFrom(stdPrometheus.SummaryOpts{
 		Namespace: "api",
-		Subsystem: serviceName + "_service",
+		Subsystem: "example_service",
 		Name:      "request_latency_microseconds",
 		Help:      "Total duration of requests in microseconds.",
 	}, fieldKeys)
 	countResult := kitPrometheus.NewSummaryFrom(stdPrometheus.SummaryOpts{
 		Namespace: "api",
-		Subsystem: serviceName + "_service",
+		Subsystem: "example_service",
 		Name:      "count_result",
 		Help:      "The result of each count method.",
 	}, []string{}) // no fields here
 
-	var srv order.Service
+	var srv example.Service
 	{
-		repository := order.NewRepo(db)
-		srv = order.NewService(repository)
+		repository := example.NewRepo(database.NewDB(logger))
+		srv = example.NewService(repository)
 	}
 
-	srv = order.LoggingMiddleware{Logger: logger, Next: srv}
-	srv = order.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srv}
+	srv = example.LoggingMiddleware{Next: srv}
+	srv = example.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srv}
 
-	endpoints := order.MakeEndpoints(srv)
+	endpoints := example.MakeEndpoints(srv)
 
 	go func() {
 		fmt.Println("listening on port", *httpAddr)
-		handler := order.NewHTTPServer(ctx, endpoints)
+		handler := example.NewHTTPServer(ctx, endpoints)
 		errs <- http.ListenAndServe(*httpAddr, handler)
 	}()
 

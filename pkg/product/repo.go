@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"gt-kit/pkg/product/model/protoc/model"
+	"gt-kit/shared/utils/logger"
 )
 
 //var logCreate = logger.MakeLogEntry("product", "RepoProduct")
@@ -111,19 +112,19 @@ func (repo *repo) DetailProduct(ctx context.Context, id string) (*model.ProductD
 
 	err := repo.db.QueryRow("SELECT id,name,gallery,options, price::money::numeric::int8 FROM mt_product WHERE id=$1", id).Scan(&p.Id,&p.ProductName,&gallery, &options, &p.Price)
 	if err != nil {
-		//level.Error(logCreate).Log("err", err)
+		logger.Error(nil, err)
 		return nil, err
 	}
 
 	err = json.Unmarshal([]byte(gallery), &p.Gallery)
 	if err != nil {
-		//level.Error(logCreate).Log("err", err)
+		logger.Error(nil, err)
 		return nil, err
 	}
 
 	err = json.Unmarshal([]byte(options), &p.Options)
 	if err != nil {
-		//level.Error(logCreate).Log("err", err)
+		logger.Error(nil, err)
 		return nil, err
 	}
 	return &p, nil

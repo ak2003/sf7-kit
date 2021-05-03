@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"github.com/afex/hystrix-go/hystrix"
 	"gt-kit/pkg/product/model/protoc/model"
+	"gt-kit/shared/utils/logger"
 
 	"github.com/gofrs/uuid"
 	"github.com/olivere/elastic/v7"
@@ -53,19 +54,17 @@ func (s service) CreateProduct(ctx context.Context, product interface{}) (interf
 
 	tx, err := s.repository.CreateProduct(ctx, p)
 	if err != nil {
-		//level.Error(logCreate).Log("err", err)
+		logger.Error(nil, err)
 		return &p, err
 	}
 
 	err = s.storeToEs(ctx, uid.String(), p, tx)
 	if err != nil {
-		//level.Info(logCreate).Log("err", err)
+		logger.Error(nil, err)
 		return &p, err
 	}
 
-	//level.Info(logCreate).Log("msg", uid)
 	return uid, nil
-
 }
 
 func (s service) storeToEs(ctx context.Context, uid string, p Product, tx *sql.Tx) error {
@@ -80,14 +79,14 @@ func (s service) storeToEs(ctx context.Context, uid string, p Product, tx *sql.T
 			elastic.SetBasicAuth("elastic", "SySDisTwdLGa8Aeah2ri"),
 		)
 		if err != nil {
-			//level.Error(logCreate).Log("err", err)
+			logger.Error(nil, err)
 			// Handle error
 			return err
 		}
 		_, err = client.Index().BodyJson(p).Index("product").Id(uid).Do(context.Background())
 		if err != nil {
 			// Handle error
-			//level.Error(logCreate).Log("err", err)
+			logger.Error(nil, err)
 			return err
 		}
 		tx.Commit()
@@ -95,7 +94,7 @@ func (s service) storeToEs(ctx context.Context, uid string, p Product, tx *sql.T
 	}, func(err error) error {
 		// do this when pkg are down
 		tx.Rollback()
-		//level.Error(logCreate).Log("err", err)
+		logger.Error(nil, err)
 		return err
 	})
 
@@ -108,7 +107,7 @@ func (s service) DetailProduct(ctx context.Context, param *model.ProductId) (*mo
 
 	dp, err := s.repository.DetailProduct(ctx, param.Id)
 	if err != nil {
-		//level.Error(logDetail).Log("err", err)
+		logger.Error(nil, err)
 		return nil, err
 	}
 

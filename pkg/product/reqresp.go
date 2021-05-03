@@ -3,7 +3,7 @@ package product
 import (
 	"context"
 	"encoding/json"
-	model2 "gt-kit/pkg/product/model/protoc/model"
+	"gt-kit/pkg/product/model/protoc/model"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -26,10 +26,10 @@ func decodeCreateProductReq(ctx context.Context, r *http.Request) (interface{}, 
 
 // decodeDetailProductReq request Method : GET
 func decodeDetailProductReq(ctx context.Context, r *http.Request) (interface{}, error) {
-	var req model2.ProductId
+	var req model.ProductId
 	vars := mux.Vars(r)
 
-	req = model2.ProductId{
+	req = model.ProductId{
 		Id: vars["id"],
 	}
 	return req, nil

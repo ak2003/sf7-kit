@@ -8,7 +8,7 @@ import (
 	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
 	stdPrometheus "github.com/prometheus/client_golang/prometheus"
-	"gt-kit/pkg/order"
+	"gt-kit/pkg/user"
 	"gt-kit/shared/utils/config"
 
 	"github.com/go-kit/kit/log"
@@ -21,22 +21,20 @@ import (
 	"syscall"
 )
 
-var serviceName = "order"
-
 func init()  {
 	fmt.Println("Initiate Config")
-	config.SetConfigFile("config", "pkg/" + serviceName + "/config", "json")
+	config.SetConfigFile("config", "pkg/user/config", "json")
 }
 
 func main() {
 
-	var httpAddr = flag.String("http", ":7070", "http listen address")
+	var httpAddr = flag.String("http", ":8080", "http listen address")
 	var logger log.Logger
 	{
 		logger = log.NewLogfmtLogger(os.Stderr)
 		logger = log.NewSyncLogger(logger)
 		logger = log.With(logger,
-			"service", serviceName,
+			"service", "user",
 			"time:", log.DefaultTimestampUTC,
 			"caller", log.DefaultCaller,
 		)
@@ -57,6 +55,7 @@ func main() {
 			dbName = config.GetDBName(dbDriver)
 		)
 		var dbSource = "postgresql://"+ dbUser +":"+ dbPass +"@"+dbHost+":"+dbPort+"/"+ dbName+"?sslmode=disable"
+		level.Info(logger).Log("dbInfo", dbSource)
 		db, err = sql.Open("postgres", dbSource)
 		if err != nil {
 			level.Error(logger).Log("exit", err)
@@ -80,37 +79,37 @@ func main() {
 	fieldKeys := []string{"method", "error"}
 	requestCount := kitPrometheus.NewCounterFrom(stdPrometheus.CounterOpts{
 		Namespace: "api",
-		Subsystem: serviceName + "_service",
+		Subsystem: "user_service",
 		Name:      "request_count",
 		Help:      "Number of requests received.",
 	}, fieldKeys)
 	requestLatency := kitPrometheus.NewSummaryFrom(stdPrometheus.SummaryOpts{
 		Namespace: "api",
-		Subsystem: serviceName + "_service",
+		Subsystem: "user_service",
 		Name:      "request_latency_microseconds",
 		Help:      "Total duration of requests in microseconds.",
 	}, fieldKeys)
 	countResult := kitPrometheus.NewSummaryFrom(stdPrometheus.SummaryOpts{
 		Namespace: "api",
-		Subsystem: serviceName + "_service",
+		Subsystem: "user_service",
 		Name:      "count_result",
 		Help:      "The result of each count method.",
 	}, []string{}) // no fields here
 
-	var srv order.Service
+	var srv user.Service
 	{
-		repository := order.NewRepo(db)
-		srv = order.NewService(repository)
+		repository := user.NewRepo(db, logger)
+		srv = user.NewService(repository)
 	}
 
-	srv = order.LoggingMiddleware{Logger: logger, Next: srv}
-	srv = order.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srv}
+	srv = user.LoggingMiddleware{Logger: logger, Next: srv}
+	srv = user.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srv}
 
-	endpoints := order.MakeEndpoints(srv)
+	endpoints := user.MakeEndpoints(srv)
 
 	go func() {
 		fmt.Println("listening on port", *httpAddr)
-		handler := order.NewHTTPServer(ctx, endpoints)
+		handler := user.NewHTTPServer(ctx, endpoints)
 		errs <- http.ListenAndServe(*httpAddr, handler)
 	}()
 

@@ -24,7 +24,6 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints, r *mux.Router) *mux
 		SigningMethod: jwt.SigningMethodHS256,
 	})
 
-	//r := mux.NewRouter()
 	r.Use(commonMiddleware)
 
 	v1 := r.PathPrefix("/v1").Subrouter()
