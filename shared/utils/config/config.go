@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/fsnotify/fsnotify"
 	"log"
 	"os"
 	"strconv"
@@ -37,6 +38,11 @@ func SetConfigFile(name, path, extension string) {
 	viper.SetConfigName(name)
 	viper.AddConfigPath(path)
 	viper.SetConfigType(extension)
+
+	viper.WatchConfig()
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		fmt.Println("Config file changed:", e.Name)
+	})
 
 	if err := viper.ReadInConfig(); err != nil {
 		log.Fatal("Error reading config file", err)

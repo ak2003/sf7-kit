@@ -4,6 +4,7 @@ import (
 	"context"
 	"sf7-kit/pkg/example/model/protoc/model"
 	"sf7-kit/shared/response"
+	"sf7-kit/shared/utils/config"
 
 	"github.com/go-kit/kit/endpoint"
 )
@@ -22,7 +23,7 @@ func makeHealthCheckEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(*model.HealthCheckRequest)
 		resp, err := s.HealthCheck(ctx, req)
-		responseBody := response.Body{Data: resp}
+		responseBody := response.Body{Data: resp, Message: config.GetString("jwt.key")}
 		return response.CreateResponse{RespBody: responseBody, Err: err}, nil
 	}
 }

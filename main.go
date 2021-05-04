@@ -25,7 +25,7 @@ import (
 
 func init()  {
 	fmt.Println("Initiate Config")
-	config.SetConfigFile("config", "pkg/example/config", "json")
+	config.SetConfigFile("config", "./config", "json")
 }
 
 func main() {
