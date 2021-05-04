@@ -1,6 +1,10 @@
 # SF7-KIT
 Sunfish-7 Golang Starter Kit
 
+#### Create proto for define response and request endpoint
+1. create file .proto in directory {pkg-name}/model/xxxx.proto
+2. create response & request like example in pkg/example/model/HealthCheck.proto
+
 #### Create endpoint using Generator
 Generate a endpoint using generator. Please follow the naming format such as kebab-case & CamelCase for each arguments.
 
