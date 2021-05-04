@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	helper2 "gt-kit/pkg/user/helper"
-	model2 "gt-kit/pkg/user/model/user"
-	"gt-kit/shared/utils/config"
-	"gt-kit/shared/utils/logger"
+	"sf7-kit/pkg/user/helper"
+	"sf7-kit/pkg/user/model/user"
+	"sf7-kit/shared/utils/config"
+	"sf7-kit/shared/utils/logger"
 	"strings"
 	"time"
 
@@ -33,7 +33,7 @@ func (s service) CreateUser(ctx context.Context, email string, password string) 
 		numEmail int
 	)
 	// Validate Email
-	if !helper2.IsEmailValid(email) {
+	if !helper.IsEmailValid(email) {
 		return "Invalid Email", nil
 	}
 
@@ -49,14 +49,14 @@ func (s service) CreateUser(ctx context.Context, email string, password string) 
 	}
 
 	// HashPassword
-	pass, err = helper2.HashAndSalt(ctx, []byte(password))
+	pass, err = helper.HashAndSalt(ctx, []byte(password))
 	if err != nil {
 		return "", err
 	}
 	
 	uid, _ := uuid.NewV4()
 	id := uid.String()
-	user := model2.User{
+	user := model.User{
 		ID:       id,
 		Email:    email,
 		Password: pass,
@@ -82,7 +82,7 @@ func (s service) LoginUser(ctx context.Context, username string, password string
 		return "", err
 	}
 
-	if !helper2.ComparePasswords(ctx, hashedPwd, []byte(password)) {
+	if !helper.ComparePasswords(ctx, hashedPwd, []byte(password)) {
 		logger.Info(nil, fmt.Sprintf("Password is wrong for email : %s", email))
 		return "", errors.New("wrong password")
 	}

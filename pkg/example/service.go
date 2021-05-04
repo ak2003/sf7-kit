@@ -2,7 +2,7 @@ package example
 
 import (
 	"context"
-	"gt-kit/pkg/example/model/protoc/model"
+	"sf7-kit/pkg/example/model/protoc/model"
 )
 
 type Service interface {

@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 	"github.com/go-kit/kit/endpoint"
-	"gt-kit/shared/response"
+	"sf7-kit/shared/response"
 )
 
 type Endpoints struct {

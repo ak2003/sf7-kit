@@ -2,10 +2,11 @@ package database
 
 import (
 	"database/sql"
+	"os"
+	"sf7-kit/shared/utils/config"
+
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
-	"gt-kit/shared/utils/config"
-	"os"
 )
 
 type PgSqlDB struct {
@@ -15,13 +16,13 @@ type PgSqlDB struct {
 func NewDB(logger log.Logger) *sql.DB {
 	var (
 		dbDriver = "postgresql"
-		dbUser = config.GetDBUser(dbDriver)
-		dbPass = config.GetDBPass(dbDriver)
-		dbHost = config.GetDBHost(dbDriver)
-		dbPort = config.GetDBPort(dbDriver)
-		dbName = config.GetDBName(dbDriver)
+		dbUser   = config.GetDBUser(dbDriver)
+		dbPass   = config.GetDBPass(dbDriver)
+		dbHost   = config.GetDBHost(dbDriver)
+		dbPort   = config.GetDBPort(dbDriver)
+		dbName   = config.GetDBName(dbDriver)
 	)
-	var dbSource = "postgresql://"+ dbUser +":"+ dbPass +"@"+dbHost+":"+dbPort+"/"+ dbName+"?sslmode=disable"
+	var dbSource = "postgresql://" + dbUser + ":" + dbPass + "@" + dbHost + ":" + dbPort + "/" + dbName + "?sslmode=disable"
 	level.Info(logger).Log("dbInfo", dbSource)
 	db, err := sql.Open("postgres", dbSource)
 	if err != nil {
@@ -31,5 +32,3 @@ func NewDB(logger log.Logger) *sql.DB {
 
 	return db
 }
-
-

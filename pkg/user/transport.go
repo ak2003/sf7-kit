@@ -4,8 +4,8 @@ package user
 import (
 	"context"
 	"github.com/form3tech-oss/jwt-go"
-	"gt-kit/shared/response"
-	"gt-kit/shared/utils/config"
+	"sf7-kit/shared/response"
+	"sf7-kit/shared/utils/config"
 	"net/http"
 
 	jwtMiddleware "github.com/auth0/go-jwt-middleware"

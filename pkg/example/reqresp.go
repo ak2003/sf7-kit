@@ -3,7 +3,7 @@ package example
 import (
 	"context"
 	"encoding/json"
-	"gt-kit/pkg/example/model/protoc/model"
+	"sf7-kit/pkg/example/model/protoc/model"
 	"net/http"
 )
 

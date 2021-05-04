@@ -8,10 +8,10 @@ import (
 	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
 	stdPrometheus "github.com/prometheus/client_golang/prometheus"
-	"gt-kit/pkg/example"
-	"gt-kit/pkg/user"
-	"gt-kit/shared/utils/config"
-	"gt-kit/shared/utils/database"
+	"sf7-kit/pkg/example"
+	"sf7-kit/pkg/user"
+	"sf7-kit/shared/utils/config"
+	"sf7-kit/shared/utils/database"
 
 	"github.com/go-kit/kit/log"
 

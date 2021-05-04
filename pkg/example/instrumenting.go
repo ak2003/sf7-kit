@@ -3,7 +3,7 @@ package example
 import (
 	"context"
 	"fmt"
-	"gt-kit/pkg/example/model/protoc/model"
+	"sf7-kit/pkg/example/model/protoc/model"
 	"time"
 
 	"github.com/go-kit/kit/metrics"

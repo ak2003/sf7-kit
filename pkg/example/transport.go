@@ -7,7 +7,7 @@ import (
 	httpTransport "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"gt-kit/shared/response"
+	"sf7-kit/shared/response"
 )
 
 func NewHTTPServer(_ context.Context, endpoints Endpoints) *mux.Router {

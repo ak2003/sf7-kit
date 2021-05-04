@@ -3,7 +3,7 @@ package response
 import (
 	"context"
 	"encoding/json"
-	"gt-kit/shared/constant"
+	"sf7-kit/shared/constant"
 	"net/http"
 )
 

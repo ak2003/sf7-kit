@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/go-kit/kit/log"
-	model2 "gt-kit/pkg/user/model/user"
+	model "sf7-kit/pkg/user/model/user"
 )
 
 var RepoErr = errors.New("unable to handle repo request")
@@ -17,7 +17,7 @@ type repo struct {
 }
 
 type Repository interface {
-	CreateUser(ctx context.Context, user model2.User) error
+	CreateUser(ctx context.Context, user model.User) error
 	GetUser(ctx context.Context, id string) (string, error)
 	LoginUser(ctx context.Context, email string) (string, string, error)
 	CheckEmail(ctx context.Context, username string) (int, error)
@@ -30,7 +30,7 @@ func NewRepo(db *sql.DB, logger log.Logger) Repository {
 	}
 }
 
-func (repo *repo) CreateUser(ctx context.Context, user model2.User) error {
+func (repo *repo) CreateUser(ctx context.Context, user model.User) error {
 	var query = `
 		INSERT INTO mt_user (id, email, password)
 		VALUES ($1, $2, $3)`

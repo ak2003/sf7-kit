@@ -1,4 +1,4 @@
-module gt-kit
+module sf7-kit
 
 go 1.16
 

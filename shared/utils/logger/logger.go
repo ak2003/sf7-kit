@@ -2,7 +2,7 @@ package logger
 
 import (
 	"fmt"
-	"gt-kit/shared/utils/config"
+	"sf7-kit/shared/utils/config"
 	"io"
 	"os"
 	"path/filepath"

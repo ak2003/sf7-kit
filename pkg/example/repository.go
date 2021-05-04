@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"gt-kit/pkg/example/model/protoc/model"
+	"sf7-kit/pkg/example/model/protoc/model"
 )
 
 var RepoErr = errors.New("unable to handle repo request")
