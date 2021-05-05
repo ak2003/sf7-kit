@@ -17,7 +17,7 @@ func NewService(rep Repository) Service {
 	}
 }
 
-func (s service) HealthCheck(ctx context.Context, req *model.HealthCheckRequest) (interface{}, error) {
+func (s service) HealthCheck(ctx context.Context, req *model.HealthCheckRequest) (*model.HealthCheckResponse, error) {
 	if req.Wording == "" {
 		logger.Error(nil, constant.ErrInvalidArgument)
 		return nil, constant.ErrInvalidArgument
@@ -27,5 +27,5 @@ func (s service) HealthCheck(ctx context.Context, req *model.HealthCheckRequest)
 		logger.Error(nil, err)
 		return nil, err
 	}
-	return res, nil
+	return &res, nil
 }

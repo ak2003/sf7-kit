@@ -6,5 +6,5 @@ import (
 )
 
 type Service interface {
-	HealthCheck(ctx context.Context, req *model.HealthCheckRequest) (interface{}, error)
+	HealthCheck(ctx context.Context, req *model.HealthCheckRequest) (*model.HealthCheckResponse, error)
 }

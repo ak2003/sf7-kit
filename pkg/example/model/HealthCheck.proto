@@ -9,3 +9,7 @@ message HealthCheckRequest {
 message HealthCheckResponse {
   string wording = 1;
 }
+
+service Example {
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse) {}
+}

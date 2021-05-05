@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"gt-kit/pkg/order/model"
-	"gt-kit/shared/utils/logger"
+	"sf7-kit/pkg/order/model"
+	"sf7-kit/shared/utils/logger"
 
 )
 

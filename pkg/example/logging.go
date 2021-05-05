@@ -11,7 +11,7 @@ type LoggingMiddleware struct {
 	Next Service
 }
 
-func (mw LoggingMiddleware) HealthCheck(ctx context.Context, req *model.HealthCheckRequest) (output interface{}, err error) {
+func (mw LoggingMiddleware) HealthCheck(ctx context.Context, req *model.HealthCheckRequest) (output *model.HealthCheckResponse, err error) {
 	msg := "Incoming Request"
 	defer func(begin time.Time) {
 		fields := make(map[string]interface{})
