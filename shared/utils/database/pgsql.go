@@ -3,7 +3,8 @@ package database
 import (
 	"database/sql"
 	"os"
-	"sf7-kit/shared/utils/config"
+
+	"gitlab.com/dataon1/sf7-kit/shared/utils/config"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"

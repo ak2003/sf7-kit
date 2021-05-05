@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/go-kit/kit/log"
-	model2 "gt-kit/pkg/product/model/protoc/model"
+	"gitlab.com/dataon1/sf7-kit/pkg/product/model/protoc/model"
 	"time"
 )
 
@@ -35,7 +35,7 @@ func (mw LoggingMiddleware) CreateProduct(ctx context.Context, product interface
 	return
 }
 
-func (mw LoggingMiddleware) DetailProduct(ctx context.Context, param *model2.ProductId) (output *model2.ProductDetail, err error) {
+func (mw LoggingMiddleware) DetailProduct(ctx context.Context, param *model.ProductId) (output *model.ProductDetail, err error) {
 	var i []byte
 
 	i, err = json.Marshal(param)

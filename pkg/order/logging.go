@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/go-kit/kit/log"
-	model2 "gt-kit/pkg/order/model"
+	"gitlab.com/dataon1/sf7-kit/pkg/order/model"
 	"time"
 )
 
@@ -13,7 +13,7 @@ type LoggingMiddleware struct {
 	Next   Service
 }
 
-func (mw LoggingMiddleware) AddToCart(ctx context.Context, req model2.AddToCartRequest) (output interface{}, err error) {
+func (mw LoggingMiddleware) AddToCart(ctx context.Context, req model.AddToCartRequest) (output interface{}, err error) {
 	var (
 		i []byte
 	)
@@ -37,7 +37,7 @@ func (mw LoggingMiddleware) AddToCart(ctx context.Context, req model2.AddToCartR
 	return
 }
 
-func (mw LoggingMiddleware) DeleteItemCart(ctx context.Context, req model2.DeleteItemCartRequest) (output *[]model2.ItemCart, err error) {
+func (mw LoggingMiddleware) DeleteItemCart(ctx context.Context, req model.DeleteItemCartRequest) (output *[]model.ItemCart, err error) {
 	var (
 		i []byte
 	)

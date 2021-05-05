@@ -3,8 +3,9 @@ package product
 import (
 	"context"
 	"fmt"
-	model2 "gt-kit/pkg/product/model/protoc/model"
 	"time"
+
+	"gitlab.com/dataon1/sf7-kit/pkg/product/model/protoc/model"
 
 	"github.com/go-kit/kit/metrics"
 )
@@ -27,7 +28,7 @@ func (mw InstrumentingMiddleware) CreateProduct(ctx context.Context, product int
 	return
 }
 
-func (mw InstrumentingMiddleware) DetailProduct(ctx context.Context, param *model2.ProductId) (output *model2.ProductDetail, err error) {
+func (mw InstrumentingMiddleware) DetailProduct(ctx context.Context, param *model.ProductId) (output *model.ProductDetail, err error) {
 	defer func(begin time.Time) {
 		lvs := []string{"method", "CreateProduct", "error", fmt.Sprint(err != nil)}
 		mw.RequestCount.With(lvs...).Add(1)

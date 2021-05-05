@@ -2,7 +2,7 @@ package example
 
 import (
 	"context"
-	"sf7-kit/pkg/example/model/protoc/model"
+	"gitlab.com/dataon1/sf7-kit/pkg/example/model/protoc/model"
 )
 
 type Service interface {

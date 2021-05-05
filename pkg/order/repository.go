@@ -4,9 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"sf7-kit/pkg/order/model"
-	"sf7-kit/shared/utils/logger"
-
+	"gitlab.com/dataon1/sf7-kit/pkg/order/model"
+	"gitlab.com/dataon1/sf7-kit/shared/utils/logger"
 )
 
 type Repository interface {

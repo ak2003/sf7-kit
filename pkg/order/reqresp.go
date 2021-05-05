@@ -3,7 +3,7 @@ package order
 import (
 	"context"
 	"encoding/json"
-	"gt-kit/pkg/order/model"
+	"gitlab.com/dataon1/sf7-kit/pkg/order/model"
 	"net/http"
 )
 

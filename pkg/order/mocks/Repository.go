@@ -4,7 +4,7 @@ package mocks
 
 import (
 	context "context"
-	model "gt-kit/pkg/order/model"
+	model "gitlab.com/dataon1/sf7-kit/pkg/order/model"
 
 	mock "github.com/stretchr/testify/mock"
 )
