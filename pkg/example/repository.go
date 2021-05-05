@@ -14,7 +14,7 @@ type repo struct {
 }
 
 type Repository interface {
-	HealthCheck(ctx context.Context, req *model.HealthCheckRequest) (interface{}, error)
+	HealthCheck(ctx context.Context, req *model.HealthCheckRequest) (model.HealthCheckResponse, error)
 }
 
 func NewRepo(db *sql.DB) Repository {
@@ -23,7 +23,7 @@ func NewRepo(db *sql.DB) Repository {
 	}
 }
 
-func (r repo) HealthCheck(ctx context.Context, req *model.HealthCheckRequest) (interface{}, error) {
+func (r repo) HealthCheck(ctx context.Context, req *model.HealthCheckRequest) (model.HealthCheckResponse, error) {
 	// @ select table
 	//err := r.db.QueryRow("SELECT email FROM mt_user WHERE id=$1", wording).Scan(&wording)
 	//if err != nil {
@@ -42,5 +42,8 @@ func (r repo) HealthCheck(ctx context.Context, req *model.HealthCheckRequest) (i
 	//	return err
 	//}
 
-	return req, nil
+	var res model.HealthCheckResponse
+	res.Wording = "Are You Say, " + req.Wording
+
+	return res, nil
 }

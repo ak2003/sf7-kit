@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"google.golang.org/grpc"
-	"gt-kit/pkg/order/helper"
-	"gt-kit/pkg/order/model"
-	modelprotoc "gt-kit/pkg/product/model/protoc/model"
-	"gt-kit/shared/utils/logger"
+	"sf7-kit/pkg/order/helper"
+	"sf7-kit/pkg/order/model"
+	modelprotoc "sf7-kit/pkg/product/model/protoc/model"
+	"sf7-kit/shared/utils/logger"
 )
 
 type service struct {

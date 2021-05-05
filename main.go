@@ -5,13 +5,17 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
-	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
-	_ "github.com/lib/pq"
-	stdPrometheus "github.com/prometheus/client_golang/prometheus"
+	"net"
 	"sf7-kit/pkg/example"
+	"sf7-kit/pkg/example/model/protoc/model"
 	"sf7-kit/pkg/user"
 	"sf7-kit/shared/utils/config"
 	"sf7-kit/shared/utils/database"
+
+	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
+	_ "github.com/lib/pq"
+	stdPrometheus "github.com/prometheus/client_golang/prometheus"
+	"google.golang.org/grpc"
 
 	"github.com/go-kit/kit/log"
 
@@ -23,7 +27,7 @@ import (
 	"syscall"
 )
 
-func init()  {
+func init() {
 	fmt.Println("Initiate Config")
 	config.SetConfigFile("config", "./config", "json")
 }
@@ -50,13 +54,13 @@ func main() {
 		var err error
 		var (
 			dbDriver = "postgresql"
-			dbUser = config.GetDBUser(dbDriver)
-			dbPass = config.GetDBPass(dbDriver)
-			dbHost = config.GetDBHost(dbDriver)
-			dbPort = config.GetDBPort(dbDriver)
-			dbName = config.GetDBName(dbDriver)
+			dbUser   = config.GetDBUser(dbDriver)
+			dbPass   = config.GetDBPass(dbDriver)
+			dbHost   = config.GetDBHost(dbDriver)
+			dbPort   = config.GetDBPort(dbDriver)
+			dbName   = config.GetDBName(dbDriver)
 		)
-		var dbSource = "postgresql://"+ dbUser +":"+ dbPass +"@"+dbHost+":"+dbPort+"/"+ dbName+"?sslmode=disable"
+		var dbSource = "postgresql://" + dbUser + ":" + dbPass + "@" + dbHost + ":" + dbPort + "/" + dbName + "?sslmode=disable"
 		level.Info(logger).Log("dbInfo", dbSource)
 		db, err = sql.Open("postgres", dbSource)
 		if err != nil {
@@ -127,6 +131,19 @@ func main() {
 		handler := example.NewHTTPServer(ctx, endpoints)
 		handler = user.NewHTTPServer(ctx, endpointsUser, handler)
 		errs <- http.ListenAndServe(*httpAddr, handler)
+	}()
+
+	// Starting RPC Server
+	srvRpc := grpc.NewServer()
+	model.RegisterExampleServer(srvRpc, srv)
+
+	go func() {
+		level.Info(logger).Log("msg", "Starting RPC server at"+":7000")
+		l, err := net.Listen("tcp", ":7000")
+		if err != nil {
+			level.Error(logger).Log("err", fmt.Errorf("could not listen to %s: %v", ":7000", err))
+		}
+		errs <- srvRpc.Serve(l)
 	}()
 
 	level.Error(logger).Log("exit", <-errs)
