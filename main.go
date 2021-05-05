@@ -6,11 +6,12 @@ import (
 	"flag"
 	"fmt"
 	"net"
-	"sf7-kit/pkg/example"
-	"sf7-kit/pkg/example/model/protoc/model"
-	"sf7-kit/pkg/user"
-	"sf7-kit/shared/utils/config"
-	"sf7-kit/shared/utils/database"
+
+	"gitlab.com/dataon1/sf7-kit/pkg/example"
+	"gitlab.com/dataon1/sf7-kit/pkg/example/model/protoc/model"
+	"gitlab.com/dataon1/sf7-kit/pkg/user"
+	"gitlab.com/dataon1/sf7-kit/shared/utils/config"
+	"gitlab.com/dataon1/sf7-kit/shared/utils/database"
 
 	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"

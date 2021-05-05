@@ -3,7 +3,7 @@ package order
 import (
 	"context"
 	"fmt"
-	model2 "gt-kit/pkg/order/model"
+	"gitlab.com/dataon1/sf7-kit/pkg/order/model"
 	"time"
 
 	"github.com/go-kit/kit/metrics"
@@ -17,7 +17,7 @@ type InstrumentingMiddleware struct {
 }
 
 
-func (mw InstrumentingMiddleware) AddToCart(ctx context.Context, req model2.AddToCartRequest) (output interface{}, err error) {
+func (mw InstrumentingMiddleware) AddToCart(ctx context.Context, req model.AddToCartRequest) (output interface{}, err error) {
 	defer func(begin time.Time) {
 		lvs := []string{"method", "AddToCart", "error", fmt.Sprint(err != nil)}
 		mw.RequestCount.With(lvs...).Add(1)
@@ -28,7 +28,7 @@ func (mw InstrumentingMiddleware) AddToCart(ctx context.Context, req model2.AddT
 	return
 }
 
-func (mw InstrumentingMiddleware)  DeleteItemCart(ctx context.Context, req model2.DeleteItemCartRequest) (output *[]model2.ItemCart, err error) {
+func (mw InstrumentingMiddleware)  DeleteItemCart(ctx context.Context, req model.DeleteItemCartRequest) (output *[]model.ItemCart, err error) {
 	defer func(begin time.Time) {
 		lvs := []string{"method", "AddToCart", "error", fmt.Sprint(err != nil)}
 		mw.RequestCount.With(lvs...).Add(1)

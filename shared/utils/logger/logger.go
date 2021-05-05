@@ -2,7 +2,7 @@ package logger
 
 import (
 	"fmt"
-	"sf7-kit/shared/utils/config"
+	"gitlab.com/dataon1/sf7-kit/shared/utils/config"
 	"io"
 	"os"
 	"path/filepath"

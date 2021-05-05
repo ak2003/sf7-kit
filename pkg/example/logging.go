@@ -2,8 +2,8 @@ package example
 
 import (
 	"context"
-	"sf7-kit/pkg/example/model/protoc/model"
-	"sf7-kit/shared/utils/logger"
+	"gitlab.com/dataon1/sf7-kit/pkg/example/model/protoc/model"
+	"gitlab.com/dataon1/sf7-kit/shared/utils/logger"
 	"time"
 )
 

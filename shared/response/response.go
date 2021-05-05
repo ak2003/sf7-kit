@@ -3,7 +3,7 @@ package response
 import (
 	"context"
 	"encoding/json"
-	"sf7-kit/shared/constant"
+	"gitlab.com/dataon1/sf7-kit/shared/constant"
 	"net/http"
 )
 

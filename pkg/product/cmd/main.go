@@ -5,15 +5,16 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"net"
+
 	"github.com/go-kit/kit/log"
 	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
 	stdPrometheus "github.com/prometheus/client_golang/prometheus"
+	"gitlab.com/dataon1/sf7-kit/pkg/product"
+	"gitlab.com/dataon1/sf7-kit/pkg/product/model/protoc/model"
+	"gitlab.com/dataon1/sf7-kit/shared/utils/config"
 	"google.golang.org/grpc"
-	"gt-kit/pkg/product"
-	"gt-kit/pkg/product/model/protoc/model"
-	"gt-kit/shared/utils/config"
-	"net"
 
 	"github.com/go-kit/kit/log/level"
 
@@ -25,9 +26,9 @@ import (
 
 var serviceName = "product"
 
-func init()  {
+func init() {
 	fmt.Println("Initiate Config")
-	config.SetConfigFile("config", "pkg/" + serviceName + "/config", "json")
+	config.SetConfigFile("config", "pkg/"+serviceName+"/config", "json")
 }
 
 func main() {
@@ -111,7 +112,6 @@ func main() {
 
 	endpoints := product.MakeEndpoints(srv)
 
-
 	go func() {
 		fmt.Println("listening on port", *httpAddr)
 		handler := product.NewHTTPServer(ctx, endpoints)
@@ -123,7 +123,7 @@ func main() {
 	model.RegisterProductsServer(srvRpc, srv)
 
 	go func() {
-		level.Info(logger).Log("msg", "Starting RPC server at" + ":7000")
+		level.Info(logger).Log("msg", "Starting RPC server at"+":7000")
 		l, err := net.Listen("tcp", ":7000")
 		if err != nil {
 			level.Error(logger).Log("err", fmt.Errorf("could not listen to %s: %v", ":7000", err))

@@ -3,11 +3,12 @@ package order
 import (
 	"context"
 	"encoding/json"
+
+	"gitlab.com/dataon1/sf7-kit/pkg/order/helper"
+	"gitlab.com/dataon1/sf7-kit/pkg/order/model"
+	modelprotoc "gitlab.com/dataon1/sf7-kit/pkg/product/model/protoc/model"
+	"gitlab.com/dataon1/sf7-kit/shared/utils/logger"
 	"google.golang.org/grpc"
-	"sf7-kit/pkg/order/helper"
-	"sf7-kit/pkg/order/model"
-	modelprotoc "sf7-kit/pkg/product/model/protoc/model"
-	"sf7-kit/shared/utils/logger"
 )
 
 type service struct {
@@ -123,8 +124,8 @@ func (s service) DeleteItemCart(ctx context.Context, param model.DeleteItemCartR
 	}
 
 	var (
-		itemCart []model.ItemCart
-		tPrice int64
+		itemCart     []model.ItemCart
+		tPrice       int64
 		tPriceOption int64
 	)
 

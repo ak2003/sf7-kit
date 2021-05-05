@@ -2,7 +2,7 @@ package order
 
 import (
 	"context"
-	"gt-kit/pkg/order/model"
+	"gitlab.com/dataon1/sf7-kit/pkg/order/model"
 )
 
 type Service interface {

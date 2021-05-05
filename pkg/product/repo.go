@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"gt-kit/pkg/product/model/protoc/model"
-	"gt-kit/shared/utils/logger"
+	"gitlab.com/dataon1/sf7-kit/pkg/product/model/protoc/model"
+	"gitlab.com/dataon1/sf7-kit/shared/utils/logger"
 )
 
 //var logCreate = logger.MakeLogEntry("product", "RepoProduct")

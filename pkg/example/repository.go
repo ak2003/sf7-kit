@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"sf7-kit/pkg/example/model/protoc/model"
+	"gitlab.com/dataon1/sf7-kit/pkg/example/model/protoc/model"
 )
 
 var RepoErr = errors.New("unable to handle repo request")

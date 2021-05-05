@@ -3,7 +3,7 @@ package product
 import (
 	"context"
 	"encoding/json"
-	"gt-kit/pkg/product/model/protoc/model"
+	"gitlab.com/dataon1/sf7-kit/pkg/product/model/protoc/model"
 	"net/http"
 
 	"github.com/gorilla/mux"
