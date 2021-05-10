@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"os"
 
-	"gitlab.com/dataon1/sf7-kit/shared/utils/config"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/config"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"

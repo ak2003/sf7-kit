@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 
-	"gitlab.com/dataon1/sf7-kit/pkg/order/helper"
-	"gitlab.com/dataon1/sf7-kit/pkg/order/model"
-	modelprotoc "gitlab.com/dataon1/sf7-kit/pkg/product/model/protoc/model"
-	"gitlab.com/dataon1/sf7-kit/shared/utils/logger"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/order/helper"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/order/model"
+	modelprotoc "gitlab.dataon.com/gophers/sf7-kit/pkg/product/model/protoc/model"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/logger"
 	"google.golang.org/grpc"
 )
 

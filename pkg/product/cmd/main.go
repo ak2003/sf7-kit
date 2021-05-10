@@ -11,9 +11,9 @@ import (
 	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
 	stdPrometheus "github.com/prometheus/client_golang/prometheus"
-	"gitlab.com/dataon1/sf7-kit/pkg/product"
-	"gitlab.com/dataon1/sf7-kit/pkg/product/model/protoc/model"
-	"gitlab.com/dataon1/sf7-kit/shared/utils/config"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/product"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/product/model/protoc/model"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/config"
 	"google.golang.org/grpc"
 
 	"github.com/go-kit/kit/log/level"

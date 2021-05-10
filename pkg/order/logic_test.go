@@ -3,8 +3,8 @@ package order
 import (
 	"context"
 	"errors"
-	"gitlab.com/dataon1/sf7-kit/pkg/order/mocks"
-	"gitlab.com/dataon1/sf7-kit/pkg/order/model"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/order/mocks"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/order/model"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

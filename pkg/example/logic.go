@@ -2,9 +2,9 @@ package example
 
 import (
 	"context"
-	"gitlab.com/dataon1/sf7-kit/pkg/example/model/protoc/model"
-	"gitlab.com/dataon1/sf7-kit/shared/constant"
-	"gitlab.com/dataon1/sf7-kit/shared/utils/logger"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/example/model/protoc/model"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/constant"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/logger"
 )
 
 type service struct {

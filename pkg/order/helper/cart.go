@@ -3,8 +3,8 @@ package helper
 import (
 	"context"
 	"encoding/json"
-	"gitlab.com/dataon1/sf7-kit/pkg/order/model"
-	modelProtoc "gitlab.com/dataon1/sf7-kit/pkg/product/model/protoc/model"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/order/model"
+	modelProtoc "gitlab.dataon.com/gophers/sf7-kit/pkg/product/model/protoc/model"
 	"strconv"
 )
 

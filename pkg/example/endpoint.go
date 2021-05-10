@@ -2,9 +2,9 @@ package example
 
 import (
 	"context"
-	"gitlab.com/dataon1/sf7-kit/pkg/example/model/protoc/model"
-	"gitlab.com/dataon1/sf7-kit/shared/response"
-	"gitlab.com/dataon1/sf7-kit/shared/utils/config"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/example/model/protoc/model"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/response"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/config"
 
 	"github.com/go-kit/kit/endpoint"
 )

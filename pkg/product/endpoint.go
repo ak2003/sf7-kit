@@ -2,8 +2,8 @@ package product
 
 import (
 	"context"
-	"gitlab.com/dataon1/sf7-kit/pkg/product/model/protoc/model"
-	"gitlab.com/dataon1/sf7-kit/shared/response"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/product/model/protoc/model"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/response"
 	"net/http"
 
 	"github.com/go-kit/kit/endpoint"

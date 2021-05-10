@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"gitlab.com/dataon1/sf7-kit/pkg/order/model"
-	"gitlab.com/dataon1/sf7-kit/shared/utils/logger"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/order/model"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/logger"
 )
 
 type Repository interface {

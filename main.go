@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"net"
 
-	"gitlab.com/dataon1/sf7-kit/pkg/example"
-	"gitlab.com/dataon1/sf7-kit/pkg/example/model/protoc/model"
-	"gitlab.com/dataon1/sf7-kit/pkg/user"
-	"gitlab.com/dataon1/sf7-kit/shared/utils/config"
-	"gitlab.com/dataon1/sf7-kit/shared/utils/database"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/example"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/example/model/protoc/model"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/user"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/config"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/database"
 
 	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"

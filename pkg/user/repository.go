@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/go-kit/kit/log"
-	model "gitlab.com/dataon1/sf7-kit/pkg/user/model/user"
+	model "gitlab.dataon.com/gophers/sf7-kit/pkg/user/model/user"
 )
 
 var RepoErr = errors.New("unable to handle repo request")

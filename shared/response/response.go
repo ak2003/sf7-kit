@@ -3,7 +3,7 @@ package response
 import (
 	"context"
 	"encoding/json"
-	"gitlab.com/dataon1/sf7-kit/shared/constant"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/constant"
 	"net/http"
 )
 

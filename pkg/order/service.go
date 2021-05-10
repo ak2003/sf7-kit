@@ -2,7 +2,7 @@ package order
 
 import (
 	"context"
-	"gitlab.com/dataon1/sf7-kit/pkg/order/model"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/order/model"
 )
 
 type Service interface {

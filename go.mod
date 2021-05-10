@@ -1,4 +1,4 @@
-module gitlab.com/dataon1/sf7-kit
+module gitlab.dataon.com/gophers/sf7-kit
 
 go 1.16
 

@@ -3,7 +3,7 @@ package product
 //"github.com/form3tech-oss/jwt-go"
 import (
 	"context"
-	"gitlab.com/dataon1/sf7-kit/shared/response"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/response"
 	"net/http"
 
 	httpTransport "github.com/go-kit/kit/transport/http"

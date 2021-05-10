@@ -2,8 +2,8 @@ package order
 
 import (
 	"context"
-	"gitlab.com/dataon1/sf7-kit/pkg/order/model"
-	"gitlab.com/dataon1/sf7-kit/shared/response"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/order/model"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/response"
 	"net/http"
 
 	"github.com/go-kit/kit/endpoint"

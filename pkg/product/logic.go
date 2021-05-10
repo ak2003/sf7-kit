@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"github.com/afex/hystrix-go/hystrix"
-	"gitlab.com/dataon1/sf7-kit/pkg/product/model/protoc/model"
-	"gitlab.com/dataon1/sf7-kit/shared/utils/logger"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/product/model/protoc/model"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/logger"
 
 	"github.com/gofrs/uuid"
 	"github.com/olivere/elastic/v7"

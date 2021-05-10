@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 	"github.com/go-kit/kit/endpoint"
-	"gitlab.com/dataon1/sf7-kit/shared/response"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/response"
 )
 
 type Endpoints struct {

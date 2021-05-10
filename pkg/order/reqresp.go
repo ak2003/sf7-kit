@@ -3,7 +3,7 @@ package order
 import (
 	"context"
 	"encoding/json"
-	"gitlab.com/dataon1/sf7-kit/pkg/order/model"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/order/model"
 	"net/http"
 )
 
