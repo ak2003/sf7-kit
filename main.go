@@ -103,7 +103,7 @@ func main() {
 		Help:      "The result of each count method.",
 	}, []string{}) // no fields here
 
-	// example package
+	// example package.
 	var srv example.Service
 	{
 		repository := example.NewRepo(database.NewDB(logger))
