@@ -7,18 +7,14 @@ import (
 	"fmt"
 	"net"
 
-	"gitlab.dataon.com/gophers/sf7-kit/pkg/example"
-	"gitlab.dataon.com/gophers/sf7-kit/pkg/example/model/protoc/model"
-	"gitlab.dataon.com/gophers/sf7-kit/pkg/user"
-	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/config"
-	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/database"
-
+	"github.com/go-kit/kit/log"
 	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
 	_ "github.com/lib/pq"
 	stdPrometheus "github.com/prometheus/client_golang/prometheus"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/product"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/product/model/protoc/model"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/config"
 	"google.golang.org/grpc"
-
-	"github.com/go-kit/kit/log"
 
 	"github.com/go-kit/kit/log/level"
 
@@ -28,20 +24,22 @@ import (
 	"syscall"
 )
 
+var serviceName = "product"
+
 func init() {
 	fmt.Println("Initiate Config")
-	config.SetConfigFile("config", "./config", "json")
+	config.SetConfigFile("config", "pkg/"+serviceName+"/config", "json")
 }
 
 func main() {
-	// @todo port get from config
+
 	var httpAddr = flag.String("http", ":8080", "http listen address")
 	var logger log.Logger
 	{
 		logger = log.NewLogfmtLogger(os.Stderr)
 		logger = log.NewSyncLogger(logger)
 		logger = log.With(logger,
-			"service", "user",
+			"service", serviceName,
 			"time:", log.DefaultTimestampUTC,
 			"caller", log.DefaultCaller,
 		)
@@ -86,57 +84,43 @@ func main() {
 	fieldKeys := []string{"method", "error"}
 	requestCount := kitPrometheus.NewCounterFrom(stdPrometheus.CounterOpts{
 		Namespace: "api",
-		Subsystem: "sf7_service",
+		Subsystem: serviceName + "_service",
 		Name:      "request_count",
 		Help:      "Number of requests received.",
 	}, fieldKeys)
 	requestLatency := kitPrometheus.NewSummaryFrom(stdPrometheus.SummaryOpts{
 		Namespace: "api",
-		Subsystem: "sf7_service",
+		Subsystem: serviceName + "_service",
 		Name:      "request_latency_microseconds",
 		Help:      "Total duration of requests in microseconds.",
 	}, fieldKeys)
 	countResult := kitPrometheus.NewSummaryFrom(stdPrometheus.SummaryOpts{
 		Namespace: "api",
-		Subsystem: "sf7_service",
+		Subsystem: serviceName + "_service",
 		Name:      "count_result",
 		Help:      "The result of each count method.",
 	}, []string{}) // no fields here
 
-	// example package
-	var srv example.Service
+	var srv product.Service
 	{
-		repository := example.NewRepo(database.NewDB(logger))
-		srv = example.NewService(repository)
+		repository := product.NewRepo(db)
+		srv = product.NewService(repository)
 	}
 
-	srv = example.LoggingMiddleware{Next: srv}
-	srv = example.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srv}
+	srv = product.LoggingMiddleware{Logger: logger, Next: srv}
+	srv = product.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srv}
 
-	endpoints := example.MakeEndpoints(srv)
-
-	// user package
-	var srvUser user.Service
-	{
-		repository := user.NewRepo(db, logger)
-		srvUser = user.NewService(repository)
-	}
-
-	srvUser = user.LoggingMiddleware{Logger: logger, Next: srvUser}
-	srvUser = user.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srvUser}
-
-	endpointsUser := user.MakeEndpoints(srvUser)
+	endpoints := product.MakeEndpoints(srv)
 
 	go func() {
 		fmt.Println("listening on port", *httpAddr)
-		handler := example.NewHTTPServer(ctx, endpoints)
-		handler = user.NewHTTPServer(ctx, endpointsUser, handler)
+		handler := product.NewHTTPServer(ctx, endpoints)
 		errs <- http.ListenAndServe(*httpAddr, handler)
 	}()
 
 	// Starting RPC Server
 	srvRpc := grpc.NewServer()
-	model.RegisterExampleServer(srvRpc, srv)
+	model.RegisterProductsServer(srvRpc, srv)
 
 	go func() {
 		level.Info(logger).Log("msg", "Starting RPC server at"+":7000")

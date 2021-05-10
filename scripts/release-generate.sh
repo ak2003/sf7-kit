@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # This script will generate release log template based on the stg
-# revision and prd revision for grab-pay service (internal under grab-pay repo)
+# revision and prd revision for grab-pay service (pkg under grab-pay repo)
 #
 # How to use:
 # just run this file with serviceName releaseTag rollbackTag
