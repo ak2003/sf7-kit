@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
-	"database/sql"
+	"encoding/json"
+
+	// "database/sql"
 	"flag"
 	"fmt"
 	"net"
@@ -10,10 +12,13 @@ import (
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/example"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/example/model/protoc/model"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/user"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/connections"
 	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/config"
 	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/database"
 
+	_ "github.com/denisenkom/go-mssqldb"
 	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	stdPrometheus "github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
@@ -50,20 +55,20 @@ func main() {
 	level.Info(logger).Log("msg", "service started")
 	defer level.Info(logger).Log("msg", "service ended")
 
-	var db *sql.DB
+	var dbSlave *sqlx.DB
 	{
 		var err error
-		var (
-			dbDriver = "postgresql"
-			dbUser   = config.GetDBUser(dbDriver)
-			dbPass   = config.GetDBPass(dbDriver)
-			dbHost   = config.GetDBHost(dbDriver)
-			dbPort   = config.GetDBPort(dbDriver)
-			dbName   = config.GetDBName(dbDriver)
-		)
-		var dbSource = "postgresql://" + dbUser + ":" + dbPass + "@" + dbHost + ":" + dbPort + "/" + dbName + "?sslmode=disable"
-		level.Info(logger).Log("dbInfo", dbSource)
-		db, err = sql.Open("postgres", dbSource)
+		dbSlave, err = connections.ConnSlave(logger)
+		if err != nil {
+			level.Error(logger).Log("exit", err)
+			os.Exit(-1)
+		}
+
+	}
+	var dbMaster *sqlx.DB
+	{
+		var err error
+		dbMaster, err = connections.ConnMaster(logger)
 		if err != nil {
 			level.Error(logger).Log("exit", err)
 			os.Exit(-1)
@@ -118,7 +123,7 @@ func main() {
 	// user package
 	var srvUser user.Service
 	{
-		repository := user.NewRepo(db, logger)
+		repository := user.NewRepo(dbSlave, dbMaster, logger)
 		srvUser = user.NewService(repository)
 	}
 
@@ -131,6 +136,8 @@ func main() {
 		fmt.Println("listening on port", *httpAddr)
 		handler := example.NewHTTPServer(ctx, endpoints)
 		handler = user.NewHTTPServer(ctx, endpointsUser, handler)
+
+		handler.Handle("/api/{rest:.*}", HandshakeHandler()).Methods("OPTIONS")
 		errs <- http.ListenAndServe(*httpAddr, handler)
 	}()
 
@@ -148,4 +155,14 @@ func main() {
 	}()
 
 	level.Error(logger).Log("exit", <-errs)
+}
+
+func HandshakeHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "*")
+
+		payload, _ := json.Marshal("OK")
+		w.Write(payload)
+	}
 }
