@@ -2,18 +2,21 @@ package user
 
 import (
 	"context"
-	"database/sql"
 	"errors"
+
 	"github.com/go-kit/kit/log"
+	"github.com/jmoiron/sqlx"
 	model "gitlab.dataon.com/gophers/sf7-kit/pkg/user/model/user"
 )
 
 var RepoErr = errors.New("unable to handle repo request")
+
 //var logCreate = logger.MakeLogEntry("user","RepoUser")
 
 type repo struct {
-	db     *sql.DB
-	logger log.Logger
+	dbSlave  *sqlx.DB
+	dbMaster *sqlx.DB
+	logger   log.Logger
 }
 
 type Repository interface {
@@ -23,10 +26,11 @@ type Repository interface {
 	CheckEmail(ctx context.Context, username string) (int, error)
 }
 
-func NewRepo(db *sql.DB, logger log.Logger) Repository {
+func NewRepo(dbSlave, dbMaster *sqlx.DB, logger log.Logger) Repository {
 	return &repo{
-		db:     db,
-		logger: log.With(logger, "repo", "sql"),
+		dbSlave:  dbSlave,
+		dbMaster: dbMaster,
+		logger:   log.With(logger, "repo", "sql"),
 	}
 }
 
@@ -39,7 +43,7 @@ func (repo *repo) CreateUser(ctx context.Context, user model.User) error {
 		return RepoErr
 	}
 
-	_, err := repo.db.ExecContext(ctx, query, user.ID, user.Email, user.Password)
+	_, err := repo.dbMaster.ExecContext(ctx, query, user.ID, user.Email, user.Password)
 	if err != nil {
 		//level.Error(logCreate).Log("err", err)
 		return err
@@ -49,7 +53,7 @@ func (repo *repo) CreateUser(ctx context.Context, user model.User) error {
 
 func (repo *repo) GetUser(ctx context.Context, id string) (string, error) {
 	var email string
-	err := repo.db.QueryRow("SELECT email FROM mt_user WHERE id=$1", id).Scan(&email)
+	err := repo.dbSlave.QueryRow("SELECT email FROM mt_user WHERE id=$1", id).Scan(&email)
 	if err != nil {
 		//level.Error(logCreate).Log("err", err)
 		return "", RepoErr
@@ -60,10 +64,10 @@ func (repo *repo) GetUser(ctx context.Context, id string) (string, error) {
 
 func (repo *repo) LoginUser(ctx context.Context, username string) (string, string, error) {
 	var (
-		email string
+		email    string
 		password string
 	)
-	err := repo.db.QueryRow("SELECT email, password FROM mt_user WHERE email=$1", username).Scan(&email, &password)
+	err := repo.dbSlave.QueryRow("SELECT email, password FROM mt_user WHERE email=$1", username).Scan(&email, &password)
 	if err != nil {
 		//level.Error(logCreate).Log("err", err)
 		return "", "", RepoErr
@@ -74,7 +78,7 @@ func (repo *repo) LoginUser(ctx context.Context, username string) (string, strin
 
 func (repo *repo) CheckEmail(ctx context.Context, username string) (int, error) {
 	var emailCount int
-	err := repo.db.QueryRow("SELECT count (email) as emailCount FROM mt_user WHERE email=$1", username).Scan(&emailCount)
+	err := repo.dbSlave.QueryRow("SELECT count (email) as emailCount FROM mt_user WHERE email=$1", username).Scan(&emailCount)
 	if err != nil {
 		//level.Error(logCreate).Log("err", err)
 		return 0, RepoErr

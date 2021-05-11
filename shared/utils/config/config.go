@@ -3,11 +3,12 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
 	"log"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/fsnotify/fsnotify"
 
 	"github.com/spf13/viper"
 )
@@ -98,7 +99,7 @@ func GetDBName(driver string) string {
 }
 
 func GetDBUser(driver string) string {
-	return GetConfigUsed(fmt.Sprintf(DbUser, driver), fmt.Sprintf("database.%v.username", driver))
+	return GetConfigUsed(fmt.Sprintf(DbUser, driver), fmt.Sprintf("database.%v.user", driver))
 }
 
 func GetDBPass(driver string) string {

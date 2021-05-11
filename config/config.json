@@ -1,7 +1,23 @@
 {
   "name": "example",
   "database": {
-    "driver": "postgresql",
+    "driver": "sqlserver",
+    "sqlserverslave": {
+      "timeout": 5,
+      "host": "192.168.102.115",
+      "port": "1435",
+      "dbname": "dbSF6_QA",
+      "user": "pmsf6",
+      "password": "Y4WI0z6RDi1Yk9scZxJ5"
+    },
+    "sqlservermaster": {
+      "timeout": 5,
+      "host": "192.168.102.115",
+      "port": "1435",
+      "dbname": "dbSF6_QA",
+      "user": "pmsf6",
+      "password": "Y4WI0z6RDi1Yk9scZxJ5"
+    },
     "postgresql": {
       "timeout": 5,
       "host": "localhost",
@@ -12,6 +28,6 @@
     }
   },
   "jwt": {
-    "key" : "909329"
+    "key": "909329"
   }
 }
