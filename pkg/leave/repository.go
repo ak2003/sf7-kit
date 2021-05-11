@@ -343,10 +343,10 @@ func (repo *repo) GetLeaveRequestListing(ctx context.Context, req model.GetLeave
 			paramData = append(paramData, fmt.Sprintf(`%%%s%%`, req.RequestStatus))
 		}
 
-		if req.FilterLeaveEnddate == "" {
-			if req.LeaveEnddate != "" {
+		if req.FilterLeaveStartdate == "" {
+			if req.LeaveStartdate != "" {
 				queryListing = queryListing + ` AND leave_startdate >= ?`
-				paramData = append(paramData, req.LeaveEnddate)
+				paramData = append(paramData, req.LeaveStartdate)
 				// , leave_enddate
 			}
 		}
