@@ -22,7 +22,7 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints, r *mux.Router) *mux
 	//})
 
 	// r := mux.NewRouter()
-	r.Use(commonMiddleware)
+	// r.Use(commonMiddleware)
 	api := r.PathPrefix("/api").Subrouter()
 	apiv1 := api.PathPrefix("/v1").Subrouter()
 

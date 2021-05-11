@@ -34,6 +34,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/rs/cors"
 )
 
 func init() {
@@ -161,10 +163,11 @@ func main() {
 		handler = leave.NewHTTPServer(ctx, endpointsLeave, handler)
 		handler = employee.NewHTTPServer(ctx, endpointsEmployee, handler)
 
-		handler.Handle("/api/{rest:.*}", HandshakeHandler()).Methods("OPTIONS")
+		// handler.Handle("/api/{rest:.*}", HandshakeHandler()).Methods("OPTIONS")
 
-		handler.Use(mux.CORSMethodMiddleware(handler))
-		errs <- http.ListenAndServe(*httpAddr, handler)
+		handlers := cors.Default().Handler(handler)
+		// handler.Use(mux.CORSMethodMiddleware(handler))
+		errs <- http.ListenAndServe(*httpAddr, handlers)
 	}()
 
 	// Starting RPC Server
