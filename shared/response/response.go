@@ -3,18 +3,28 @@ package response
 import (
 	"context"
 	"encoding/json"
-	"gitlab.dataon.com/gophers/sf7-kit/shared/constant"
 	"net/http"
+
+	"gitlab.dataon.com/gophers/sf7-kit/shared/constant"
 )
 
 type CreateResponse struct {
-	Err   error  `json:"error,omitempty"`
+	Err      error `json:"error,omitempty"`
 	RespBody Body
 }
-
+type CreateResponseWithStatusCode struct {
+	ResponseJson CreateResponse
+	StatusCode   int
+}
 type Body struct {
 	Message string      `json:"message,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
+}
+
+func EncodeJsonWithStatusCode(ctx context.Context, w http.ResponseWriter, response interface{}) error {
+	a := response.(CreateResponseWithStatusCode)
+	w.WriteHeader(a.StatusCode)
+	return json.NewEncoder(w).Encode(a.ResponseJson.RespBody)
 }
 
 func EncodeJson(ctx context.Context, w http.ResponseWriter, response interface{}) error {

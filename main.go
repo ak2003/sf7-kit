@@ -9,8 +9,10 @@ import (
 	"fmt"
 	"net"
 
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/employee"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/example"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/example/model/protoc/model"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/leave"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/user"
 	"gitlab.dataon.com/gophers/sf7-kit/shared/connections"
 	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/config"
@@ -18,6 +20,7 @@ import (
 
 	_ "github.com/denisenkom/go-mssqldb"
 	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
+	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	stdPrometheus "github.com/prometheus/client_golang/prometheus"
@@ -132,12 +135,35 @@ func main() {
 
 	endpointsUser := user.MakeEndpoints(srvUser)
 
+	var srvLeave leave.Service
+	{
+		repository := leave.NewRepo(dbSlave, dbMaster)
+
+		srvLeave = leave.NewService(repository)
+	}
+	endpointsLeave := leave.MakeEndpoints(srvLeave)
+
+	var srvEmployee employee.Service
+	{
+		repository := employee.NewRepo(dbSlave, dbMaster)
+
+		srvEmployee = employee.NewService(repository)
+	}
+	endpointsEmployee := employee.MakeEndpoints(srvEmployee)
+
 	go func() {
 		fmt.Println("listening on port", *httpAddr)
-		handler := example.NewHTTPServer(ctx, endpoints)
+		handler := mux.NewRouter()
+		// handler.Use(response.CommonMiddleware)
+		handler.Use(commonMiddleware)
+		handler = example.NewHTTPServer(ctx, endpoints, handler)
 		handler = user.NewHTTPServer(ctx, endpointsUser, handler)
+		handler = leave.NewHTTPServer(ctx, endpointsLeave, handler)
+		handler = employee.NewHTTPServer(ctx, endpointsEmployee, handler)
 
 		handler.Handle("/api/{rest:.*}", HandshakeHandler()).Methods("OPTIONS")
+
+		handler.Use(mux.CORSMethodMiddleware(handler))
 		errs <- http.ListenAndServe(*httpAddr, handler)
 	}()
 
@@ -155,6 +181,19 @@ func main() {
 	}()
 
 	level.Error(logger).Log("exit", <-errs)
+}
+
+func commonMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Token, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+
+		next.ServeHTTP(w, r)
+	})
 }
 
 func HandshakeHandler() http.HandlerFunc {
