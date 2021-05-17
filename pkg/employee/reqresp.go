@@ -45,7 +45,7 @@ func decodeGetEmployeeUpdateAddressReq(ctx context.Context, r *http.Request) (in
 }
 
 func decodeGetEmployeeCreateAddressReq(ctx context.Context, r *http.Request) (interface{}, error) {
-	var req model.UpdateEmployeeMasterAddressRequest
+	var req model.CreateEmployeeMasterAddressRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		return nil, err

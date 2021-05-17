@@ -58,17 +58,20 @@ func (repo *repo) CreateEmployeeMasterAddress(ctx context.Context, req model.Cre
 	(emp_id, addresstype_code, address, rt, rw, 
 	subdistrict, district, city_id, state_id, country_id, 
 	zipcode, phone, living_status, owner_status, address_distance, 
-	created_date, created_by, lat_lng, local_address)
+	created_date, created_by, lat_lng, local_address, modified_date,
+	modified_by)
 	VALUES( ?, ?, ?, ?, ?, 
 			?, ?, ?, ?, ?, 
 			?, ?, ?, ?, ?, 
-			getdate(), ?, ?, ?);`
+			getdate(), ?, ?, ?, getdate(), 
+			?);`
 	queryCreate = repo.dbMaster.Rebind(queryCreate)
 	_, errData = repo.dbMaster.Exec(queryCreate,
 		req.EmployeeId, req.EmployeeAddressType, req.EmployeeAddress, req.EmployeeAddressRt, req.EmployeeAddressRw,
 		req.EmployeeAddressSubdistrict, req.EmployeeAddressDistrict, req.EmployeeAddressCityId, req.EmployeeAddressStateId, req.EmployeeAddressCountryId,
 		req.EmployeeAddressZipcode, req.EmployeeAddressPhone, req.EmployeeAddressLivingStatus, req.EmployeeAddressOwnerStatus, req.EmployeeAddressDistance,
-		req.Username, req.EmployeeAddressLatLong, req.EmployeeAddressLocal)
+		req.Username, req.EmployeeAddressLatLong, req.EmployeeAddressLocal,
+		req.Username)
 
 	if errData != nil {
 		// fmt.Println(queryUpdate)
