@@ -17,6 +17,19 @@ func NewService(rep Repository) Service {
 	}
 }
 
+func (s service) GetDataRequestFor(ctx context.Context, param model.GetDataRequestForReq) (error, []model.GetDataRequestForResponse) {
+	//logDetail := logger.MakeLogEntry("product", "DetailProduct")
+	//level.Info(logDetail).Log("param-id", param.Id)
+
+	err, dp := s.repository.GetDataRequestFor(ctx, param)
+	if err != nil {
+		logger.Error(nil, err)
+		return err, dp
+	}
+
+	return nil, dp
+}
+
 func (s service) GetLeaveRequestListing(ctx context.Context, param model.GetLeaveRequestListingRequest) (error, []model.GetLeaveRequestListingResponse) {
 	//logDetail := logger.MakeLogEntry("product", "DetailProduct")
 	//level.Info(logDetail).Log("param-id", param.Id)
@@ -24,7 +37,7 @@ func (s service) GetLeaveRequestListing(ctx context.Context, param model.GetLeav
 	err, dp := s.repository.GetLeaveRequestListing(ctx, param)
 	if err != nil {
 		logger.Error(nil, err)
-		return nil, dp
+		return err, dp
 	}
 
 	return nil, dp
@@ -37,7 +50,7 @@ func (s service) GetLeaveRequestFilterListing(ctx context.Context, param model.G
 	err, dp := s.repository.GetLeaveRequestFilterListing(ctx, param)
 	if err != nil {
 		logger.Error(nil, err)
-		return nil, dp
+		return err, dp
 	}
 
 	return nil, dp

@@ -62,4 +62,16 @@ type (
 		RequestStatus  string    `json:"request_status"`
 		Reqfullday     string    `json:"reqfullday"`
 	}
+
+	GetDataRequestForReq struct {
+		Language   string `json:"language"`
+		CompanyId  *int64 `json:"company_id"`
+		EmployeeId string `json:"employee_id"`
+	}
+
+	GetDataRequestForResponse struct {
+		Optvalue string `json:"optvalue"`
+		Opttext  string `json:"opttext"`
+		Optempid string `json:"optempid"`
+	}
 )
