@@ -2,6 +2,7 @@ package example
 
 import (
 	"context"
+
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/transport"
 	httpTransport "github.com/go-kit/kit/transport/http"
@@ -10,15 +11,12 @@ import (
 	"gitlab.dataon.com/gophers/sf7-kit/shared/response"
 )
 
-func NewHTTPServer(_ context.Context, endpoints Endpoints) *mux.Router {
+func NewHTTPServer(_ context.Context, endpoints Endpoints, r *mux.Router) *mux.Router {
 	var logger log.Logger
 	opts := []httpTransport.ServerOption{
 		httpTransport.ServerErrorHandler(transport.NewLogErrorHandler(logger)),
 		httpTransport.ServerErrorEncoder(response.EncodeError),
 	}
-
-	r := mux.NewRouter()
-	r.Use(response.CommonMiddleware)
 
 	v1 := r.PathPrefix("/v1").Subrouter()
 

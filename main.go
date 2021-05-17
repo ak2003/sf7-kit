@@ -2,18 +2,26 @@ package main
 
 import (
 	"context"
-	"database/sql"
+	"encoding/json"
+
+	// "database/sql"
 	"flag"
 	"fmt"
 	"net"
 
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/employee"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/example"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/example/model/protoc/model"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/leave"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/user"
+	"gitlab.dataon.com/gophers/sf7-kit/shared/connections"
 	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/config"
 	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/database"
 
+	_ "github.com/denisenkom/go-mssqldb"
 	kitPrometheus "github.com/go-kit/kit/metrics/prometheus"
+	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	stdPrometheus "github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
@@ -26,6 +34,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/rs/cors"
 )
 
 func init() {
@@ -50,20 +60,20 @@ func main() {
 	level.Info(logger).Log("msg", "service started")
 	defer level.Info(logger).Log("msg", "service ended")
 
-	var db *sql.DB
+	var dbSlave *sqlx.DB
 	{
 		var err error
-		var (
-			dbDriver = "postgresql"
-			dbUser   = config.GetDBUser(dbDriver)
-			dbPass   = config.GetDBPass(dbDriver)
-			dbHost   = config.GetDBHost(dbDriver)
-			dbPort   = config.GetDBPort(dbDriver)
-			dbName   = config.GetDBName(dbDriver)
-		)
-		var dbSource = "postgresql://" + dbUser + ":" + dbPass + "@" + dbHost + ":" + dbPort + "/" + dbName + "?sslmode=disable"
-		level.Info(logger).Log("dbInfo", dbSource)
-		db, err = sql.Open("postgres", dbSource)
+		dbSlave, err = connections.ConnSlave(logger)
+		if err != nil {
+			level.Error(logger).Log("exit", err)
+			os.Exit(-1)
+		}
+
+	}
+	var dbMaster *sqlx.DB
+	{
+		var err error
+		dbMaster, err = connections.ConnMaster(logger)
 		if err != nil {
 			level.Error(logger).Log("exit", err)
 			os.Exit(-1)
@@ -103,7 +113,7 @@ func main() {
 		Help:      "The result of each count method.",
 	}, []string{}) // no fields here
 
-	// example package
+	// example package.
 	var srv example.Service
 	{
 		repository := example.NewRepo(database.NewDB(logger))
@@ -118,7 +128,7 @@ func main() {
 	// user package
 	var srvUser user.Service
 	{
-		repository := user.NewRepo(db, logger)
+		repository := user.NewRepo(dbSlave, dbMaster, logger)
 		srvUser = user.NewService(repository)
 	}
 
@@ -127,11 +137,37 @@ func main() {
 
 	endpointsUser := user.MakeEndpoints(srvUser)
 
+	var srvLeave leave.Service
+	{
+		repository := leave.NewRepo(dbSlave, dbMaster)
+
+		srvLeave = leave.NewService(repository)
+	}
+	endpointsLeave := leave.MakeEndpoints(srvLeave)
+
+	var srvEmployee employee.Service
+	{
+		repository := employee.NewRepo(dbSlave, dbMaster)
+
+		srvEmployee = employee.NewService(repository)
+	}
+	endpointsEmployee := employee.MakeEndpoints(srvEmployee)
+
 	go func() {
 		fmt.Println("listening on port", *httpAddr)
-		handler := example.NewHTTPServer(ctx, endpoints)
+		handler := mux.NewRouter()
+		// handler.Use(response.CommonMiddleware)
+		handler.Use(commonMiddleware)
+		handler = example.NewHTTPServer(ctx, endpoints, handler)
 		handler = user.NewHTTPServer(ctx, endpointsUser, handler)
-		errs <- http.ListenAndServe(*httpAddr, handler)
+		handler = leave.NewHTTPServer(ctx, endpointsLeave, handler)
+		handler = employee.NewHTTPServer(ctx, endpointsEmployee, handler)
+
+		// handler.Handle("/api/{rest:.*}", HandshakeHandler()).Methods("OPTIONS")
+
+		handlers := cors.Default().Handler(handler)
+		// handler.Use(mux.CORSMethodMiddleware(handler))
+		errs <- http.ListenAndServe(*httpAddr, handlers)
 	}()
 
 	// Starting RPC Server
@@ -148,4 +184,27 @@ func main() {
 	}()
 
 	level.Error(logger).Log("exit", <-errs)
+}
+
+func commonMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE, UPDATE")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Token, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func HandshakeHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "*")
+
+		payload, _ := json.Marshal("OK")
+		w.Write(payload)
+	}
 }

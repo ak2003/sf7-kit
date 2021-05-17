@@ -3,10 +3,11 @@ package user
 //"github.com/form3tech-oss/jwt-go"
 import (
 	"context"
+	"net/http"
+
 	"github.com/form3tech-oss/jwt-go"
 	"gitlab.dataon.com/gophers/sf7-kit/shared/response"
 	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/config"
-	"net/http"
 
 	jwtMiddleware "github.com/auth0/go-jwt-middleware"
 	httpTransport "github.com/go-kit/kit/transport/http"
@@ -24,10 +25,9 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints, r *mux.Router) *mux
 		SigningMethod: jwt.SigningMethodHS256,
 	})
 
-	r.Use(commonMiddleware)
+	// r.Use(commonMiddleware)
 
 	v1 := r.PathPrefix("/v1").Subrouter()
-
 
 	// User Registration
 	v1.Methods("POST").Path("/user").Handler(httpTransport.NewServer(
@@ -53,7 +53,6 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints, r *mux.Router) *mux
 	))
 	an := negroni.New(negroni.HandlerFunc(mw.HandlerWithNext), negroni.Wrap(ar))
 	v1.PathPrefix("/profile").Handler(an)
-
 
 	// Metric
 	r.Methods("GET").Path("/metrics").Handler(promhttp.Handler())
