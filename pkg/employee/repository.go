@@ -129,16 +129,26 @@ func (repo *repo) GetEmployeeMasterAddress(ctx context.Context, req model.GetEmp
 		paramData           []interface{}
 	)
 
+	if req.Language == "" {
+		req.Language = "en"
+	}
+
 	paramData = append(paramData, req.EmployeeId)
 
-	queryGetData = `SELECT adr.emp_id, adr.addresstype_code, adr.address, adr.rt, adr.rw, 
+	queryGetData = `SELECT adr.emp_id, adr.addresstype_code, adr.addresstype_code + ' - ' + adt.name_` + req.Language + ` as addresstype_name, adr.address, adr.rt, adr.rw, 
 					adr.subdistrict, adr.district, adr.city_id, adr.state_id, adr.country_id,
 					adr.zipcode, adr.phone, adr.living_status, adr.owner_status, adr.address_distance, 
 					adr.lat_lng, adr.local_address, ct.city_name, st.state_name
 					FROM dbSF6_QA.dbo.TEODEMPADDRESS adr
+					LEFT JOIN TEOMADDRESSTYPE adt ON adr.addresstype_code = adt.code
 					LEFT JOIN TGEMCITY ct ON  ct.city_id = adr.city_id
 					LEFT JOIN TGEMSTATE st ON st.state_id = adr.state_id
-					WHERE adr.emp_id = ?;`
+					WHERE adr.emp_id = ? `
+
+	if req.AddressTypeCode != "" {
+		queryGetData = queryGetData + ` AND adr.addresstype_code = ? `
+		paramData = append(paramData, req.AddressTypeCode)
+	}
 
 	queryGetData = repo.dbSlave.Rebind(queryGetData)
 	res1, errData := repo.dbSlave.Queryx(queryGetData, paramData...)
@@ -153,10 +163,11 @@ func (repo *repo) GetEmployeeMasterAddress(ctx context.Context, req model.GetEmp
 	if res1.Next() {
 		var temp model.GetEmployeeMasterAddressResponse
 
-		errData := res1.Scan(&temp.EmployeeId, &temp.EmployeeAddressType, &temp.EmployeeAddress, &temp.EmployeeAddressRt, &temp.EmployeeAddressRw,
+		errData := res1.Scan(&temp.EmployeeId, &temp.EmployeeAddressType, &temp.EmployeeAddressTypeName, &temp.EmployeeAddress, &temp.EmployeeAddressRt, &temp.EmployeeAddressRw,
 			&temp.EmployeeAddressSubdistrict, &temp.EmployeeAddressDistrict, &temp.EmployeeAddressCityId, &temp.EmployeeAddressStateId, &temp.EmployeeAddressCountryId,
 			&temp.EmployeeAddressZipcode, &temp.EmployeeAddressPhone, &temp.EmployeeAddressLivingStatus, &temp.EmployeeAddressOwnerStatus, &temp.EmployeeAddressDistance,
 			&temp.EmployeeAddressLatLong, &temp.EmployeeAddressLocal, &temp.EmployeeAddressCityName, &temp.EmployeeAddressStateName)
+
 		if errData != nil {
 			logger.Error(nil, errData)
 			// logger.Println(queryListing)
@@ -164,8 +175,26 @@ func (repo *repo) GetEmployeeMasterAddress(ctx context.Context, req model.GetEmp
 			return errData, dataEmployeeAddress
 		}
 
+		defer res1.Close()
+
 		dataEmployeeAddress = append(dataEmployeeAddress, temp)
+
+		for res1.Next() {
+			errData := res1.Scan(&temp.EmployeeId, &temp.EmployeeAddressType, &temp.EmployeeAddressTypeName, &temp.EmployeeAddress, &temp.EmployeeAddressRt, &temp.EmployeeAddressRw,
+				&temp.EmployeeAddressSubdistrict, &temp.EmployeeAddressDistrict, &temp.EmployeeAddressCityId, &temp.EmployeeAddressStateId, &temp.EmployeeAddressCountryId,
+				&temp.EmployeeAddressZipcode, &temp.EmployeeAddressPhone, &temp.EmployeeAddressLivingStatus, &temp.EmployeeAddressOwnerStatus, &temp.EmployeeAddressDistance,
+				&temp.EmployeeAddressLatLong, &temp.EmployeeAddressLocal, &temp.EmployeeAddressCityName, &temp.EmployeeAddressStateName)
+
+			if errData != nil {
+				logger.Error(nil, errData)
+				res1.Close()
+				return errData, dataEmployeeAddress
+			}
+
+			dataEmployeeAddress = append(dataEmployeeAddress, temp)
+		}
 	}
+
 	return errData, dataEmployeeAddress
 }
 

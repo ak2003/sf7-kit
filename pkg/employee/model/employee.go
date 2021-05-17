@@ -68,12 +68,15 @@ type (
 	}
 
 	GetEmployeeMasterAddressRequest struct {
-		EmployeeId string `json:"employee_id" binding:"required"`
+		EmployeeId      string `json:"employee_id" binding:"required"`
+		Language        string `json:"language" binding:"required"`
+		AddressTypeCode string `json:"addresstype_code"`
 	}
 
 	GetEmployeeMasterAddressResponse struct {
 		EmployeeId                  string  `json:"employee_id"`
 		EmployeeAddressType         *string `json:"employee_address_type"`
+		EmployeeAddressTypeName     *string `json:"employee_address_type_name"`
 		EmployeeAddress             *string `json:"employee_address"`
 		EmployeeAddressRt           *string `json:"employee_address_rt"`
 		EmployeeAddressRw           *string `json:"employee_address_rw"`
