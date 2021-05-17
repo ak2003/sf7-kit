@@ -63,15 +63,27 @@ type (
 		Reqfullday     string    `json:"reqfullday"`
 	}
 
-	GetDataRequestForReq struct {
+	GetDataTypeOfLeaveReq struct {
 		Language   string `json:"language"`
 		CompanyId  *int64 `json:"company_id"`
 		EmployeeId string `json:"employee_id"`
 	}
 
-	GetDataRequestForResponse struct {
+	GetDataTypeOfLeaveResponse struct {
 		Optvalue string `json:"optvalue"`
 		Opttext  string `json:"opttext"`
 		Optempid string `json:"optempid"`
+	}
+
+	GetDataRequestForReq struct {
+		Status    string `json:"status"`
+		CompanyId *int64 `json:"company_id"`
+		Search    string `json:"search"`
+	}
+
+	GetDataRequestForResponse struct {
+		EmployeeId    string `json:"employee_id"`
+		EmployeeName  string `json:"employee_name"`
+		EmployeeTitle string `json:"employee_title"`
 	}
 )

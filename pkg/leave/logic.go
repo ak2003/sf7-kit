@@ -30,6 +30,19 @@ func (s service) GetDataRequestFor(ctx context.Context, param model.GetDataReque
 	return nil, dp
 }
 
+func (s service) GetDataTypeOfLeave(ctx context.Context, param model.GetDataTypeOfLeaveReq) (error, []model.GetDataTypeOfLeaveResponse) {
+	//logDetail := logger.MakeLogEntry("product", "DetailProduct")
+	//level.Info(logDetail).Log("param-id", param.Id)
+
+	err, dp := s.repository.GetDataTypeOfLeave(ctx, param)
+	if err != nil {
+		logger.Error(nil, err)
+		return err, dp
+	}
+
+	return nil, dp
+}
+
 func (s service) GetLeaveRequestListing(ctx context.Context, param model.GetLeaveRequestListingRequest) (error, []model.GetLeaveRequestListingResponse) {
 	//logDetail := logger.MakeLogEntry("product", "DetailProduct")
 	//level.Info(logDetail).Log("param-id", param.Id)

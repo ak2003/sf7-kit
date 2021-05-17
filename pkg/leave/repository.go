@@ -15,6 +15,7 @@ import (
 type Repository interface {
 	GetLeaveRequestListing(ctx context.Context, sc model.GetLeaveRequestListingRequest) (error, []model.GetLeaveRequestListingResponse)
 	GetLeaveRequestFilterListing(ctx context.Context, sc model.GetLeaveRequestListingFilterRequest) (error, []model.GetLeaveRequestListingFilterResponse)
+	GetDataTypeOfLeave(ctx context.Context, sc model.GetDataTypeOfLeaveReq) (error, []model.GetDataTypeOfLeaveResponse)
 	GetDataRequestFor(ctx context.Context, sc model.GetDataRequestForReq) (error, []model.GetDataRequestForResponse)
 }
 
@@ -28,6 +29,72 @@ func NewRepo(dbSlave, dbMaster *sqlx.DB) Repository {
 		dbSlave:  dbSlave,
 		dbMaster: dbMaster,
 	}
+}
+
+func (repo *repo) GetDataRequestFor(ctx context.Context, req model.GetDataRequestForReq) (error, []model.GetDataRequestForResponse) {
+	var (
+		dataRequestFor      []model.GetDataRequestForResponse
+		errData             error
+		queryDataRequestfor string
+		paramData           []interface{}
+	)
+
+	if req.CompanyId == nil {
+		errData = errors.New("company_id is mandatory")
+		return errData, dataRequestFor
+	}
+	if strings.Trim(req.Status, " ") != "" {
+		req.Status = "ACTIVE"
+	}
+	paramData = append(paramData, strings.ToUpper(req.Status))
+	paramData = append(paramData, req.CompanyId)
+
+	queryDataRequestfor = `SELECT distinct A.emp_id emp_id, A.full_name , A.full_name+' ['+b.emp_no+']' ntitle
+							FROM TEOMEMPPERSONAL a
+							LEFT JOIN VIEW_EMPLOYEE_STS b ON a.emp_id = b.emp_id
+							WHERE b.active = ? AND b.company_id = ?`
+
+	if strings.Trim(req.Search, " ") != "" {
+		paramData = append(paramData, fmt.Sprintf(`%%%s%%`, req.Search))
+		queryDataRequestfor = queryDataRequestfor + ` AND A.full_name+' ['+b.emp_no+']' LIKE ? `
+	}
+	queryDataRequestfor = queryDataRequestfor + ` ORDER BY ntitle`
+
+	queryDataRequestfor = repo.dbSlave.Rebind(queryDataRequestfor)
+	res1, errData := repo.dbSlave.Queryx(queryDataRequestfor, paramData...)
+	// fmt.Print(queryListing)
+	if errData != nil {
+		logger.Error(nil, errData)
+		// logger.Println(queryListing)
+		return errData, dataRequestFor
+	}
+
+	defer res1.Close()
+
+	if res1.Next() {
+		var temp model.GetDataRequestForResponse
+		errData := res1.Scan(&temp.EmployeeId, &temp.EmployeeName, &temp.EmployeeTitle)
+		if errData != nil {
+			logger.Error(nil, errData)
+			// logger.Println(queryListing)
+			res1.Close()
+			return errData, dataRequestFor
+		}
+
+		dataRequestFor = append(dataRequestFor, temp)
+		for res1.Next() {
+			errData := res1.Scan(&temp.EmployeeId, &temp.EmployeeName, &temp.EmployeeTitle)
+			if errData != nil {
+				logger.Error(nil, errData)
+				// logger.Println(queryListing)
+				res1.Close()
+				return errData, dataRequestFor
+			}
+
+			dataRequestFor = append(dataRequestFor, temp)
+		}
+	}
+	return errData, dataRequestFor
 }
 
 func (repo *repo) GetLeaveRequestFilterListing(ctx context.Context, req model.GetLeaveRequestListingFilterRequest) (error, []model.GetLeaveRequestListingFilterResponse) {
@@ -485,12 +552,12 @@ func (repo *repo) GetLeaveRequestListing(ctx context.Context, req model.GetLeave
 	return errData, dataLeaveRequest
 }
 
-func (repo *repo) GetDataRequestFor(ctx context.Context, req model.GetDataRequestForReq) (error, []model.GetDataRequestForResponse) {
+func (repo *repo) GetDataTypeOfLeave(ctx context.Context, req model.GetDataTypeOfLeaveReq) (error, []model.GetDataTypeOfLeaveResponse) {
 	var (
-		dataLeaveRequest    []model.GetDataRequestForResponse
-		errData             error
-		queryDataRequestfor string
-		paramData           []interface{}
+		dataLeaveRequest     []model.GetDataTypeOfLeaveResponse
+		errData              error
+		queryDataTypeOfLeave string
+		paramData            []interface{}
 	)
 
 	if req.Language == "" {
@@ -512,7 +579,7 @@ func (repo *repo) GetDataRequestFor(ctx context.Context, req model.GetDataReques
 	paramData = append(paramData, req.CompanyId)
 	paramData = append(paramData, req.EmployeeId)
 
-	queryDataRequestfor = `SELECT DISTINCT TTADEMPGETLEAVE.leave_code+'|'+daytype optvalue,leavename_` + req.Language + ` opttext, TTADEMPGETLEAVE.emp_id optempid 
+	queryDataTypeOfLeave = `SELECT DISTINCT TTADEMPGETLEAVE.leave_code+'|'+daytype optvalue,leavename_` + req.Language + ` opttext, TTADEMPGETLEAVE.emp_id optempid 
 							FROM TTAMLEAVETYPE, TTADEMPGETLEAVE
 							WHERE 
 								(TTAMLEAVETYPE.graceperiod = 0
@@ -537,8 +604,8 @@ func (repo *repo) GetDataRequestFor(ctx context.Context, req model.GetDataReques
 								))
 							ORDER BY leavename_` + req.Language + ``
 
-	queryDataRequestfor = repo.dbSlave.Rebind(queryDataRequestfor)
-	res1, errData := repo.dbSlave.Queryx(queryDataRequestfor, paramData...)
+	queryDataTypeOfLeave = repo.dbSlave.Rebind(queryDataTypeOfLeave)
+	res1, errData := repo.dbSlave.Queryx(queryDataTypeOfLeave, paramData...)
 	// fmt.Print(queryListing)
 	if errData != nil {
 		logger.Error(nil, errData)
@@ -549,7 +616,7 @@ func (repo *repo) GetDataRequestFor(ctx context.Context, req model.GetDataReques
 	defer res1.Close()
 
 	if res1.Next() {
-		var temp model.GetDataRequestForResponse
+		var temp model.GetDataTypeOfLeaveResponse
 		errData := res1.Scan(&temp.Optvalue, &temp.Opttext, &temp.Optempid)
 		if errData != nil {
 			logger.Error(nil, errData)

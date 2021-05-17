@@ -39,6 +39,12 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints, r *mux.Router) *mux
 		response.EncodeJsonWithStatusCode,
 	))
 
+	apiv1Sf7Leave.Methods("POST").Path("/typeOfLeave").Handler(httpTransport.NewServer(
+		endpoints.GetDataTypeOfLeave,
+		decodeGetDataTypeOfLeaveReq,
+		response.EncodeJsonWithStatusCode,
+	))
+
 	apiv1Sf7Leave.Methods("POST").Path("/requestFor").Handler(httpTransport.NewServer(
 		endpoints.GetDataRequestFor,
 		decodeGetDataRequestForReq,

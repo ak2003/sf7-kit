@@ -163,8 +163,6 @@ func main() {
 		handler = leave.NewHTTPServer(ctx, endpointsLeave, handler)
 		handler = employee.NewHTTPServer(ctx, endpointsEmployee, handler)
 
-		// handler.Handle("/api/{rest:.*}", HandshakeHandler()).Methods("OPTIONS")
-
 		handlers := cors.Default().Handler(handler)
 		// handler.Use(mux.CORSMethodMiddleware(handler))
 		errs <- http.ListenAndServe(*httpAddr, handlers)
