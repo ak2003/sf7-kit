@@ -3,6 +3,7 @@ package leave
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/leave/model"
 	"gitlab.dataon.com/gophers/sf7-kit/shared/response"
@@ -13,12 +14,42 @@ import (
 type Endpoints struct {
 	GetLeaveRequestListing       endpoint.Endpoint
 	GetLeaveRequestFilterListing endpoint.Endpoint
+	GetDataRequestFor            endpoint.Endpoint
 }
 
 func MakeEndpoints(s Service) Endpoints {
 	return Endpoints{
 		GetLeaveRequestListing:       makeGetLeaveRequestListingEndpoint(s),
 		GetLeaveRequestFilterListing: makeGetLeaveRequestFilterListingEndpoint(s),
+		GetDataRequestFor:            makeGetDataRequestForEndpoint(s),
+	}
+}
+
+func makeGetDataRequestForEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(model.GetDataRequestForReq)
+		err, datas := s.GetDataRequestFor(ctx, req)
+		httpCode := http.StatusOK
+		var msg string
+		msg = http.StatusText(httpCode)
+		if err != nil {
+			httpCode = http.StatusUnprocessableEntity
+			if strings.Contains(err.Error(), "mandatory") {
+				httpCode = http.StatusBadRequest
+				msg = err.Error()
+			} else {
+				msg = http.StatusText(httpCode)
+			}
+		}
+
+		responseBody := response.Body{Message: msg, Data: datas}
+		return response.CreateResponseWithStatusCode{
+			ResponseJson: response.CreateResponse{
+				Err:      err,
+				RespBody: responseBody,
+			},
+			StatusCode: httpCode,
+		}, nil
 	}
 }
 
