@@ -62,4 +62,28 @@ type (
 		RequestStatus  string    `json:"request_status"`
 		Reqfullday     string    `json:"reqfullday"`
 	}
+
+	CreateLeaveRequestReq struct {
+		RequestNo      string  `json:"request_no"`
+		CompanyId      int64   `json:"company_id"`
+		Requestedby    string  `json:"requestedby"`
+		Requestfor     string  `json:"requestfor"`
+		LeaveCode      string  `json:"leave_code"`
+		LeaveStartdate string  `json:"leave_startdate"`
+		LeaveEnddate   string  `json:"leave_enddate"`
+		Remark         *string `json:"remark"`
+		Username       string  `json:"username"`
+	}
+
+	CreateLeaveRequestFormReq struct {
+		RequestNo      string  `schema:"request_no,required"`
+		CompanyId      string  `schema:"company_id,required"`
+		Requestedby    string  `schema:"requestedby"`
+		Requestfor     string  `schema:"requestfor"`
+		LeaveCode      string  `schema:"leave_code"`
+		LeaveStartdate string  `schema:"leave_startdate"`
+		LeaveEnddate   string  `schema:"leave_enddate"`
+		Remark         *string `schema:"remark"`
+		Username       *string `schema:"username"`
+	}
 )

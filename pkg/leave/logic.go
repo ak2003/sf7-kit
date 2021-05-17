@@ -17,6 +17,32 @@ func NewService(rep Repository) Service {
 	}
 }
 
+func (s service) CreateLeaveRequestForm(ctx context.Context, param model.CreateLeaveRequestFormReq) (error, string) {
+	//logDetail := logger.MakeLogEntry("product", "DetailProduct")
+	//level.Info(logDetail).Log("param-id", param.Id)
+
+	err, dp := s.repository.CreateLeaveRequestForm(ctx, param)
+	if err != nil {
+		logger.Error(nil, err)
+		return nil, dp
+	}
+
+	return nil, dp
+}
+
+func (s service) CreateLeaveRequest(ctx context.Context, param model.CreateLeaveRequestReq) (error, string) {
+	//logDetail := logger.MakeLogEntry("product", "DetailProduct")
+	//level.Info(logDetail).Log("param-id", param.Id)
+
+	err, dp := s.repository.CreateLeaveRequest(ctx, param)
+	if err != nil {
+		logger.Error(nil, err)
+		return nil, dp
+	}
+
+	return nil, dp
+}
+
 func (s service) GetLeaveRequestListing(ctx context.Context, param model.GetLeaveRequestListingRequest) (error, []model.GetLeaveRequestListingResponse) {
 	//logDetail := logger.MakeLogEntry("product", "DetailProduct")
 	//level.Info(logDetail).Log("param-id", param.Id)

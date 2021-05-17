@@ -9,4 +9,6 @@ import (
 type Service interface {
 	GetLeaveRequestListing(ctx context.Context, req model.GetLeaveRequestListingRequest) (error, []model.GetLeaveRequestListingResponse)
 	GetLeaveRequestFilterListing(ctx context.Context, req model.GetLeaveRequestListingFilterRequest) (error, []model.GetLeaveRequestListingFilterResponse)
+	CreateLeaveRequest(ctx context.Context, req model.CreateLeaveRequestReq) (error, string)
+	CreateLeaveRequestForm(ctx context.Context, req model.CreateLeaveRequestFormReq) (error, string)
 }

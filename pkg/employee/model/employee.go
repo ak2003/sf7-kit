@@ -18,11 +18,11 @@ type (
 		EmployeeNo            string     `json:"employee_no"`
 		EmployeePos           string     `json:"employee_pos"`
 		EmployeePhoneExt      *string    `json:"employee_phone_ext"`
-		EmployeeDept          string     `json:"employee_dept"`
+		EmployeeDept          *string    `json:"employee_dept"`
 		EmployeeStartDate     time.Time  `json:"employee_start_date"`
 		EmployeeGrade         string     `json:"employee_grade"`
 		EmployeeStatus        string     `json:"employee_status"`
-		EmployeeEmail         string     `json:"employee_email"`
+		EmployeeEmail         *string    `json:"employee_email"`
 		EmployeePhoto         string     `json:"employee_photo"`
 		EmployeePhone         *string    `json:"employee_phone"`
 		EmployeeMaritalStatus string     `json:"employee_marital_status"`

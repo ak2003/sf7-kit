@@ -21,8 +21,6 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints, r *mux.Router) *mux
 	//	SigningMethod: jwt.SigningMethodHS256,
 	//})
 
-	// r := mux.NewRouter()
-	// r.Use(commonMiddleware)
 	api := r.PathPrefix("/api").Subrouter()
 	apiv1 := api.PathPrefix("/v1").Subrouter()
 
@@ -61,8 +59,6 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints, r *mux.Router) *mux
 
 	r.Methods("GET").Path("/metrics").Handler(promhttp.Handler())
 
-	// r.Handle("/api/{rest:.*}", HandshakeHandler()).Methods("OPTIONS")
-
 	return r
 
 }
@@ -79,13 +75,3 @@ func commonMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
-// func HandshakeHandler() http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		w.Header().Set("Access-Control-Allow-Origin", "*")
-// 		w.Header().Set("Access-Control-Allow-Headers", "*")
-
-// 		payload, _ := json.Marshal("OK")
-// 		w.Write(payload)
-// 	}
-// }

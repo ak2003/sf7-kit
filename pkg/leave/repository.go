@@ -13,6 +13,8 @@ import (
 type Repository interface {
 	GetLeaveRequestListing(ctx context.Context, sc model.GetLeaveRequestListingRequest) (error, []model.GetLeaveRequestListingResponse)
 	GetLeaveRequestFilterListing(ctx context.Context, sc model.GetLeaveRequestListingFilterRequest) (error, []model.GetLeaveRequestListingFilterResponse)
+	CreateLeaveRequest(ctx context.Context, sc model.CreateLeaveRequestReq) (error, string)
+	CreateLeaveRequestForm(ctx context.Context, sc model.CreateLeaveRequestFormReq) (error, string)
 }
 
 type repo struct {
@@ -25,6 +27,142 @@ func NewRepo(dbSlave, dbMaster *sqlx.DB) Repository {
 		dbSlave:  dbSlave,
 		dbMaster: dbMaster,
 	}
+}
+
+func (repo *repo) CreateLeaveRequestForm(ctx context.Context, req model.CreateLeaveRequestFormReq) (error, string) {
+	var (
+		result      string
+		errCreate   error
+		queryCreate string
+	)
+	result = "OK"
+
+	if req.CompanyId == "" {
+		result = "company_id is mandatory"
+		return errCreate, result
+	}
+
+	if req.LeaveCode == "" {
+		result = "leave_code is mandatory"
+		return errCreate, result
+	}
+
+	if req.LeaveStartdate == "" {
+		result = "leave_startdate is mandatory"
+		return errCreate, result
+	}
+
+	if req.LeaveEnddate == "" {
+		result = "leave_enddate is mandatory"
+		return errCreate, result
+	}
+
+	if req.RequestNo == "" {
+		result = "request_no is mandatory"
+		return errCreate, result
+	}
+
+	if req.Requestfor == "" {
+		result = "requestfor is mandatory"
+		return errCreate, result
+	}
+
+	queryCreate = `INSERT INTO dbSF6_QA.dbo.TTADLEAVEREQUEST
+		(request_no, company_id, requestedby, requestfor, requestdate, 
+		leave_code, leave_startdate, leave_enddate, usecalendar, totaldays, 
+		remark, created_by, created_date, refdoc, reqfullday, 
+		approval_status, hdtype_starttime, hdtype_endtime, leave_start_halfday, leave_end_halfday)
+		VALUES
+		(?, ?, ?, ?, getdate(), 
+		?, ?, ?, 'N', 1.0000, 
+		NULL, N'shiburin1988', '2018-05-14 14:47:43.000', NULL, N'Y', 
+		NULL, 0, 0, NULL, NULL);`
+	queryCreate = repo.dbMaster.Rebind(queryCreate)
+
+	tx, errCreate := repo.dbMaster.Begin()
+	if errCreate != nil {
+		return errCreate, result
+	}
+	createRequest, errCreate := tx.Prepare(queryCreate)
+	if errCreate != nil {
+		return errCreate, result
+	}
+	defer createRequest.Close()
+
+	_, errCreate = createRequest.Exec()
+	if errCreate != nil {
+		return errCreate, result
+	}
+	tx.Commit()
+	return errCreate, result
+}
+
+func (repo *repo) CreateLeaveRequest(ctx context.Context, req model.CreateLeaveRequestReq) (error, string) {
+	var (
+		result      string
+		errCreate   error
+		queryCreate string
+	)
+	result = "OK"
+
+	if req.CompanyId == 0 {
+		result = "company_id is mandatory"
+		return errCreate, result
+	}
+
+	if req.LeaveCode == "" {
+		result = "leave_code is mandatory"
+		return errCreate, result
+	}
+
+	if req.LeaveStartdate == "" {
+		result = "leave_startdate is mandatory"
+		return errCreate, result
+	}
+
+	if req.LeaveEnddate == "" {
+		result = "leave_enddate is mandatory"
+		return errCreate, result
+	}
+
+	if req.RequestNo == "" {
+		result = "request_no is mandatory"
+		return errCreate, result
+	}
+
+	if req.Requestfor == "" {
+		result = "requestfor is mandatory"
+		return errCreate, result
+	}
+
+	queryCreate = `INSERT INTO dbSF6_QA.dbo.TTADLEAVEREQUEST
+		(request_no, company_id, requestedby, requestfor, requestdate, 
+		leave_code, leave_startdate, leave_enddate, usecalendar, totaldays, 
+		remark, created_by, created_date, refdoc, reqfullday, 
+		approval_status, hdtype_starttime, hdtype_endtime, leave_start_halfday, leave_end_halfday)
+		VALUES
+		(?, ?, ?, ?, getdate(), 
+		?, ?, ?, 'N', 1.0000, 
+		NULL, N'shiburin1988', '2018-05-14 14:47:43.000', NULL, N'Y', 
+		NULL, 0, 0, NULL, NULL);`
+	queryCreate = repo.dbMaster.Rebind(queryCreate)
+
+	tx, errCreate := repo.dbMaster.Begin()
+	if errCreate != nil {
+		return errCreate, result
+	}
+	createRequest, errCreate := tx.Prepare(queryCreate)
+	if errCreate != nil {
+		return errCreate, result
+	}
+	defer createRequest.Close()
+
+	_, errCreate = createRequest.Exec()
+	if errCreate != nil {
+		return errCreate, result
+	}
+	tx.Commit()
+	return errCreate, result
 }
 
 func (repo *repo) GetLeaveRequestFilterListing(ctx context.Context, req model.GetLeaveRequestListingFilterRequest) (error, []model.GetLeaveRequestListingFilterResponse) {
