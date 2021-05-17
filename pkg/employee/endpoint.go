@@ -16,6 +16,10 @@ type Endpoints struct {
 	GetEmployeeMasterAddress    endpoint.Endpoint
 	UpdateEmployeeMasterAddress endpoint.Endpoint
 	CreateEmployeeMasterAddress endpoint.Endpoint
+	GetCity                     endpoint.Endpoint
+	GetAddressType              endpoint.Endpoint
+	GetOwnerStatus              endpoint.Endpoint
+	GetStayStatus               endpoint.Endpoint
 }
 
 func MakeEndpoints(s Service) Endpoints {
@@ -25,6 +29,10 @@ func MakeEndpoints(s Service) Endpoints {
 		GetEmployeeMasterAddress:    makeGetEmployeeMasterAddressEndpoint(s),
 		UpdateEmployeeMasterAddress: makeUpdateEmployeeMasterAddressEndpoint(s),
 		CreateEmployeeMasterAddress: makeCreateEmployeeMasterAddressEndpoint(s),
+		GetCity:                     makeGetCityEndpoint(s),
+		GetAddressType:              makeGetAddressTypeEndpoint(s),
+		GetOwnerStatus:              makeGetOwnerStatusEndpoint(s),
+		GetStayStatus:               makeGetStayStatusEndpoint(s),
 	}
 }
 
@@ -116,6 +124,82 @@ func makeGetEmployeeEditInformationEndpoint(s Service) endpoint.Endpoint {
 		return response.CreateResponseWithStatusCode{
 			ResponseJson: response.CreateResponse{
 				Err:      nil,
+				RespBody: responseBody,
+			},
+			StatusCode: httpCode,
+		}, nil
+	}
+}
+
+func makeGetCityEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(model.GetCityRequest)
+		err, msg := s.GetCity(ctx, req)
+		httpCode := http.StatusOK
+		if err != nil {
+			httpCode = http.StatusUnprocessableEntity
+		}
+		responseBody := response.Body{Message: http.StatusText(httpCode), Data: msg}
+		return response.CreateResponseWithStatusCode{
+			ResponseJson: response.CreateResponse{
+				Err:      err,
+				RespBody: responseBody,
+			},
+			StatusCode: httpCode,
+		}, nil
+	}
+}
+
+func makeGetAddressTypeEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(model.GetAddressTypeRequest)
+		err, msg := s.GetAddressType(ctx, req)
+		httpCode := http.StatusOK
+		if err != nil {
+			httpCode = http.StatusUnprocessableEntity
+		}
+		responseBody := response.Body{Message: http.StatusText(httpCode), Data: msg}
+		return response.CreateResponseWithStatusCode{
+			ResponseJson: response.CreateResponse{
+				Err:      err,
+				RespBody: responseBody,
+			},
+			StatusCode: httpCode,
+		}, nil
+	}
+}
+
+func makeGetOwnerStatusEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(model.GetOwnerStatusRequest)
+		err, msg := s.GetOwnerStatus(ctx, req)
+		httpCode := http.StatusOK
+		if err != nil {
+			httpCode = http.StatusUnprocessableEntity
+		}
+		responseBody := response.Body{Message: http.StatusText(httpCode), Data: msg}
+		return response.CreateResponseWithStatusCode{
+			ResponseJson: response.CreateResponse{
+				Err:      err,
+				RespBody: responseBody,
+			},
+			StatusCode: httpCode,
+		}, nil
+	}
+}
+
+func makeGetStayStatusEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(model.GetStayStatusRequest)
+		err, msg := s.GetStayStatus(ctx, req)
+		httpCode := http.StatusOK
+		if err != nil {
+			httpCode = http.StatusUnprocessableEntity
+		}
+		responseBody := response.Body{Message: http.StatusText(httpCode), Data: msg}
+		return response.CreateResponseWithStatusCode{
+			ResponseJson: response.CreateResponse{
+				Err:      err,
 				RespBody: responseBody,
 			},
 			StatusCode: httpCode,

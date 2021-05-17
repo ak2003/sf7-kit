@@ -18,6 +18,10 @@ type Repository interface {
 	GetEmployeeMasterAddress(ctx context.Context, sc model.GetEmployeeMasterAddressRequest) (error, []model.GetEmployeeMasterAddressResponse)
 	UpdateEmployeeMasterAddress(ctx context.Context, sc model.UpdateEmployeeMasterAddressRequest) (error, string)
 	CreateEmployeeMasterAddress(ctx context.Context, sc model.CreateEmployeeMasterAddressRequest) (error, string)
+	GetCity(ctx context.Context, sc model.GetCityRequest) (error, []model.GetCityResponse)
+	GetAddressType(ctx context.Context, sc model.GetAddressTypeRequest) (error, []model.GetAddressTypeResponse)
+	GetOwnerStatus(ctx context.Context, sc model.GetOwnerStatusRequest) (error, []model.GetOwnerStatusResponse)
+	GetStayStatus(ctx context.Context, sc model.GetStayStatusRequest) (error, []model.GetStayStatusResponse)
 }
 
 type repo struct {
@@ -454,4 +458,246 @@ func (repo *repo) GetEmployeeInformation(ctx context.Context, req model.GetEmplo
 		}
 	}
 	return errData, dataEmployeeInfo
+}
+
+func (repo *repo) GetCity(ctx context.Context, req model.GetCityRequest) (error, []model.GetCityResponse) {
+	var (
+		recordset   []model.GetCityResponse
+		errData     error
+		queryString string
+		paramData   []interface{}
+	)
+
+	queryString = `
+		SELECT TOP 50 
+			CTY.city_id
+			, CTY.city_name + ' (' + STE.state_name + ', ' + CTR.country_name +')' as city_name
+			, CTY.state_id
+			, STE.state_name
+			, STE.country_id
+			, CTR.country_name
+		FROM TGEMCITY CTY
+		INNER JOIN TGEMSTATE STE
+			ON CTY.state_id = STE.state_id
+		INNER JOIN TGEMCOUNTRY CTR
+			ON STE.country_id = CTR.country_id
+		WHERE 1=1 `
+
+	if req.Id != 0 {
+		paramData = append(paramData, req.Id)
+		queryString = queryString + ` AND CTY.city_id = ? `
+	}
+
+	queryString = queryString + ` ORDER BY city_name `
+
+	queryString = repo.dbSlave.Rebind(queryString)
+	res, errData := repo.dbSlave.Queryx(queryString, paramData...)
+
+	if errData != nil {
+		logger.Error(nil, errData)
+		return errData, recordset
+	}
+
+	defer res.Close()
+
+	if res.Next() {
+		var temp model.GetCityResponse
+
+		errData := res.Scan(&temp.Value, &temp.Label, &temp.StateId, &temp.StateName, &temp.CountryId, &temp.CountryName)
+		if errData != nil {
+			logger.Error(nil, errData)
+			res.Close()
+			return errData, recordset
+		}
+
+		recordset = append(recordset, temp)
+		for res.Next() {
+			errData := res.Scan(&temp.Value, &temp.Label, &temp.StateId, &temp.StateName, &temp.CountryId, &temp.CountryName)
+			if errData != nil {
+				logger.Error(nil, errData)
+				res.Close()
+				return errData, recordset
+			}
+
+			recordset = append(recordset, temp)
+		}
+	}
+	return errData, recordset
+}
+
+func (repo *repo) GetAddressType(ctx context.Context, req model.GetAddressTypeRequest) (error, []model.GetAddressTypeResponse) {
+	var (
+		recordset   []model.GetAddressTypeResponse
+		errData     error
+		queryString string
+		paramData   []interface{}
+	)
+
+	if req.Language == "" {
+		req.Language = "en"
+	}
+
+	queryString = `SELECT code, name_` + req.Language + `, order_no FROM TEOMADDRESSTYPE WHERE 1=1 `
+
+	// paramData = append(paramData, req.CompanyId)
+	// paramData = append(paramData, req.UserId)
+	// paramData = append(paramData, req.EmployeeId)
+	if req.Code != "" {
+		paramData = append(paramData, req.Code)
+		queryString = queryString + ` AND code = ? `
+	}
+
+	queryString = queryString + ` ORDER BY order_no `
+
+	queryString = repo.dbSlave.Rebind(queryString)
+	res, errData := repo.dbSlave.Queryx(queryString, paramData...)
+
+	if errData != nil {
+		logger.Error(nil, errData)
+		return errData, recordset
+	}
+
+	defer res.Close()
+
+	if res.Next() {
+		var temp model.GetAddressTypeResponse
+
+		errData := res.Scan(&temp.Value, &temp.Label, &temp.OrderNo)
+		if errData != nil {
+			logger.Error(nil, errData)
+			res.Close()
+			return errData, recordset
+		}
+
+		recordset = append(recordset, temp)
+		for res.Next() {
+			errData := res.Scan(&temp.Value, &temp.Label, &temp.OrderNo)
+			if errData != nil {
+				logger.Error(nil, errData)
+				res.Close()
+				return errData, recordset
+			}
+
+			recordset = append(recordset, temp)
+		}
+	}
+	return errData, recordset
+}
+
+func (repo *repo) GetOwnerStatus(ctx context.Context, req model.GetOwnerStatusRequest) (error, []model.GetOwnerStatusResponse) {
+	var (
+		recordset   []model.GetOwnerStatusResponse
+		errData     error
+		queryString string
+		paramData   []interface{}
+	)
+
+	if req.Language == "" {
+		req.Language = "en"
+	}
+
+	queryString = `SELECT code, name_` + req.Language + `, order_no FROM TEOMOWNERSTATUS WHERE 1=1 `
+
+	// paramData = append(paramData, req.CompanyId)
+	// paramData = append(paramData, req.UserId)
+	// paramData = append(paramData, req.EmployeeId)
+	if req.Code != "" {
+		paramData = append(paramData, req.Code)
+		queryString = queryString + ` AND code = ? `
+	}
+
+	queryString = queryString + ` ORDER BY order_no `
+
+	queryString = repo.dbSlave.Rebind(queryString)
+	res, errData := repo.dbSlave.Queryx(queryString, paramData...)
+
+	if errData != nil {
+		logger.Error(nil, errData)
+		return errData, recordset
+	}
+
+	defer res.Close()
+
+	if res.Next() {
+		var temp model.GetOwnerStatusResponse
+
+		errData := res.Scan(&temp.Value, &temp.Label, &temp.OrderNo)
+		if errData != nil {
+			logger.Error(nil, errData)
+			res.Close()
+			return errData, recordset
+		}
+
+		recordset = append(recordset, temp)
+		for res.Next() {
+			errData := res.Scan(&temp.Value, &temp.Label, &temp.OrderNo)
+			if errData != nil {
+				logger.Error(nil, errData)
+				res.Close()
+				return errData, recordset
+			}
+
+			recordset = append(recordset, temp)
+		}
+	}
+	return errData, recordset
+}
+
+func (repo *repo) GetStayStatus(ctx context.Context, req model.GetStayStatusRequest) (error, []model.GetStayStatusResponse) {
+	var (
+		recordset   []model.GetStayStatusResponse
+		errData     error
+		queryString string
+		paramData   []interface{}
+	)
+
+	if req.Language == "" {
+		req.Language = "en"
+	}
+
+	queryString = `SELECT code, name_` + req.Language + `, order_no FROM TEOMSTAYSTATUS WHERE 1=1 `
+
+	// paramData = append(paramData, req.CompanyId)
+	// paramData = append(paramData, req.UserId)
+	// paramData = append(paramData, req.EmployeeId)
+	if req.Code != "" {
+		paramData = append(paramData, req.Code)
+		queryString = queryString + ` AND code = ? `
+	}
+
+	queryString = queryString + ` ORDER BY order_no `
+
+	queryString = repo.dbSlave.Rebind(queryString)
+	res, errData := repo.dbSlave.Queryx(queryString, paramData...)
+
+	if errData != nil {
+		logger.Error(nil, errData)
+		return errData, recordset
+	}
+
+	defer res.Close()
+
+	if res.Next() {
+		var temp model.GetStayStatusResponse
+
+		errData := res.Scan(&temp.Value, &temp.Label, &temp.OrderNo)
+		if errData != nil {
+			logger.Error(nil, errData)
+			res.Close()
+			return errData, recordset
+		}
+
+		recordset = append(recordset, temp)
+		for res.Next() {
+			errData := res.Scan(&temp.Value, &temp.Label, &temp.OrderNo)
+			if errData != nil {
+				logger.Error(nil, errData)
+				res.Close()
+				return errData, recordset
+			}
+
+			recordset = append(recordset, temp)
+		}
+	}
+	return errData, recordset
 }

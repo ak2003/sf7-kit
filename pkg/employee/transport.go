@@ -22,7 +22,7 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints, r *mux.Router) *mux
 	//})
 
 	// r := mux.NewRouter()
-	// r.Use(commonMiddleware)
+	r.Use(commonMiddleware)
 	api := r.PathPrefix("/api").Subrouter()
 	apiv1 := api.PathPrefix("/v1").Subrouter()
 
@@ -56,6 +56,30 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints, r *mux.Router) *mux
 	apiv1Sf7Employee.Methods("POST").Path("/createAddress").Handler(httpTransport.NewServer(
 		endpoints.CreateEmployeeMasterAddress,
 		decodeGetEmployeeCreateAddressReq,
+		response.EncodeJsonWithStatusCode,
+	))
+
+	apiv1Sf7Employee.Methods("POST").Path("/getCity").Handler(httpTransport.NewServer(
+		endpoints.GetCity,
+		decodeGetCityReq,
+		response.EncodeJsonWithStatusCode,
+	))
+
+	apiv1Sf7Employee.Methods("POST").Path("/getAddressType").Handler(httpTransport.NewServer(
+		endpoints.GetAddressType,
+		decodeGetAddressTypeReq,
+		response.EncodeJsonWithStatusCode,
+	))
+
+	apiv1Sf7Employee.Methods("POST").Path("/getOwnerStatus").Handler(httpTransport.NewServer(
+		endpoints.GetOwnerStatus,
+		decodeGetOwnerStatusReq,
+		response.EncodeJsonWithStatusCode,
+	))
+
+	apiv1Sf7Employee.Methods("POST").Path("/getStayStatus").Handler(httpTransport.NewServer(
+		endpoints.GetStayStatus,
+		decodeGetStayStatusReq,
 		response.EncodeJsonWithStatusCode,
 	))
 

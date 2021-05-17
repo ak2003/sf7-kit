@@ -52,3 +52,39 @@ func decodeGetEmployeeCreateAddressReq(ctx context.Context, r *http.Request) (in
 	}
 	return req, nil
 }
+
+func decodeGetCityReq(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req model.GetCityRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
+func decodeGetAddressTypeReq(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req model.GetAddressTypeRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
+func decodeGetOwnerStatusReq(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req model.GetOwnerStatusRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
+func decodeGetStayStatusReq(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req model.GetStayStatusRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return nil, err
+	}
+	return req, nil
+}

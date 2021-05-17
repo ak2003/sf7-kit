@@ -134,4 +134,60 @@ type (
 		EmployeeAddressLocal        *string `json:"employee_address_local"`
 		Username                    string  `json:"username"`
 	}
+
+	/*
+		======================= MASTER DATA ========================
+	*/
+
+	// City
+	GetCityRequest struct {
+		Id int `json:"id"`
+	}
+
+	GetCityResponse struct {
+		// value untuk unique id, label untuk nama, dibuat seperti ini untuk mengikuti format dari antd
+		Value       string `json:"value"`
+		Label       string `json:"label"`
+		StateId     int    `json:"state_id"`
+		StateName   string `json:"state_name"`
+		CountryId   int    `json:"country_id"`
+		CountryName string `json:"country_name"`
+	}
+
+	// Address Type
+	GetAddressTypeRequest struct {
+		Language string `json:"language"`
+		Code     string `json:"code"`
+	}
+
+	GetAddressTypeResponse struct {
+		// value untuk unique id, label untuk nama, dibuat seperti ini untuk mengikuti format dari antd
+		Value   string `json:"value"`
+		Label   string `json:"label"`
+		OrderNo int    `json:"order_no"`
+	}
+
+	// Owner Status
+	GetOwnerStatusRequest struct {
+		Language string `json:"language"`
+		Code     string `json:"code"`
+	}
+
+	GetOwnerStatusResponse struct {
+		Value   string `json:"value"`
+		Label   string `json:"label"`
+		OrderNo int    `json:"order_no"`
+	}
+
+	// Stay Status
+	GetStayStatusRequest struct {
+		Language string `json:"language"`
+		Code     string `json:"code"`
+	}
+
+	GetStayStatusResponse struct {
+		Value   string `json:"value"`
+		Label   string `json:"label"`
+		OrderNo int    `json:"order_no"`
+	}
 )
