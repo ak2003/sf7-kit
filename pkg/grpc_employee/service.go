@@ -1,4 +1,4 @@
-package example
+package grpc_employee
 
 import (
 	"context"
@@ -7,5 +7,5 @@ import (
 )
 
 type Service interface {
-	GetEmployeeInformation(ctx context.Context, req *model.GetEmployeeInformationRequest) (*model.GetEmployeeInformationListResponse, error)
+	GetEmployeeInformation(ctx context.Context, req *model.GetEmployeeInformationRequest) ([]*model.GetEmployeeInformationResponse, error)
 }
