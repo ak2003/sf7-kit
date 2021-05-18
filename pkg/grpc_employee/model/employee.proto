@@ -1,0 +1,40 @@
+syntax = "proto3";
+option go_package = "protoc/model";
+package model;
+
+message GetEmployeeInformationRequest {
+    string CompanyId = 1;
+    string EmployeeId = 2;
+    string Language = 3;
+    string UserId = 4;
+    string Page = 5;
+    string Limit = 6;
+}
+
+message GetEmployeeInformationResponse {
+    string EmployeeName = 1;
+    string EmployeeId = 2;
+    string EmployeeNo = 3;
+    string EmployeePos = 4;
+    optional string EmployeePhoneExt = 5;
+    string EmployeeDept = 6;
+    string EmployeeStartDate = 7;
+    string EmployeeGrade = 8;
+    string EmployeeStatus = 9;
+    string EmployeeEmail = 10;
+    string EmployeePhoto = 11;
+    optional string EmployeePhone = 12;
+    string EmployeeMaritalStatus = 13;
+    string EmployeeEndDate = 14;
+    string EmployeeGenderName = 15;
+    string EmployeeReqFlag = 16;
+    string EmployeeGenderCode = 17;
+}
+
+message GetEmployeeInformationListResponse {
+    repeated GetEmployeeInformationResponse list = 1;
+}
+
+service Employee {
+    rpc GetEmployeeInformation(GetEmployeeInformationRequest) returns (GetEmployeeInformationListResponse) {}
+  }
