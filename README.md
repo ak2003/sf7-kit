@@ -21,6 +21,10 @@ go run ./main.go
 ```
 curl -v http://localhost:8080/v1/{package-name}/health-check
 ```
+#### Docker build local env
+````
+docker build -t [image_name] .
+````
 
 ## How to generate mockgen
 1. install mockgen by running ```go get github.com/golang/mock/mockgen```
