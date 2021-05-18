@@ -21,6 +21,8 @@ type (
 		FilterRequestStatus  []string `json:"filter_request_status"`
 		Page                 int64    `json:"page"`
 		Limit                int64    `json:"limit"`
+		Field                string   `json:"field"`
+		Order                string   `json:"order"`
 	}
 
 	GetLeaveRequestListingResponse struct {

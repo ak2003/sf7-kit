@@ -321,6 +321,32 @@ func (repo *repo) GetLeaveRequestListing(ctx context.Context, req model.GetLeave
 		jumlahSudahTampil = (req.Page - 1) * req.Limit
 	}
 
+	if req.Field == "request_no" {
+		req.Field = "TTADLEAVEREQUEST.request_no"
+	} else if req.Field == "requestfor" {
+		req.Field = "TEOMEMPPERSONAL.full_name"
+	} else if req.Field == "leave_code" {
+		req.Field = "leavename_en"
+	} else if req.Field == "leave_startdate" {
+		req.Field = "leave_startdate"
+	} else if req.Field == "leave_enddate" {
+		req.Field = "leave_enddate"
+	} else if req.Field == "totaldays" {
+		req.Field = "totaldays"
+	} else if req.Field == "remark" {
+		req.Field = "TTADLEAVEREQUEST.remark"
+	} else if req.Field == "request_status" {
+		req.Field = "TGEMREQSTATUS.name_en"
+	} else {
+		req.Field = "TTADLEAVEREQUEST.request_no"
+	}
+
+	if strings.ToUpper(req.Order) == "ASC" || strings.ToUpper(req.Order) == "DESC" {
+		req.Order = strings.ToUpper(req.Order)
+	} else {
+		req.Order = "DESC"
+	}
+
 	paramData = append(paramData, req.Limit)
 	paramData = append(paramData, req.CompanyId)
 
@@ -431,7 +457,7 @@ func (repo *repo) GetLeaveRequestListing(ctx context.Context, req model.GetLeave
 		queryListing = queryListing + ` AND (TTADLEAVEREQUEST.requestfor = ? OR TTADLEAVEREQUEST.requestedby= ? )`
 		paramData = append(paramData, req.EmployeeId)
 		paramData = append(paramData, req.EmployeeId)
-		queryListing = queryListing + ` ORDER BY TTADLEAVEREQUEST.request_no ASC)`
+		queryListing = queryListing + ` ORDER BY ` + req.Field + ` ` + req.Order + `)`
 	}
 
 	if len(req.FilterLeaveCode) > 0 {
@@ -507,7 +533,7 @@ func (repo *repo) GetLeaveRequestListing(ctx context.Context, req model.GetLeave
 	}
 
 	queryListing = queryListing + ` AND (TTADLEAVEREQUEST.requestfor = ? OR TTADLEAVEREQUEST.requestedby= ? ) 
-	ORDER BY TTADLEAVEREQUEST.request_no ASC`
+	ORDER BY ` + req.Field + ` ` + req.Order
 	paramData = append(paramData, req.EmployeeId)
 	paramData = append(paramData, req.EmployeeId)
 
