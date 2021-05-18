@@ -32,6 +32,20 @@ type (
 		EmployeeGenderCode    string     `json:"employee_gender_code"`
 	}
 
+	GetEmployeeListingRequest struct {
+		CompanyId  int64  `json:"company_id" binding:"required"`
+		EmployeeId string `json:"employee_id" binding:"required"`
+		Language   string `json:"language"`
+		UserId     string `json:"user_id"`
+		Page       int64  `json:"page"`
+		Limit      int64  `json:"limit"`
+	}
+
+	GetEmployeeListingResponse struct {
+		RecordCount int                              `json:"recordcount"`
+		RecordSet   []GetEmployeeInformationResponse `json:"recordset"`
+	}
+
 	GetEmployeeByIdRequest struct {
 		CompanyId  int64  `json:"company_id" binding:"required"`
 		EmployeeId string `json:"employee_id" binding:"required"`
@@ -144,16 +158,16 @@ type (
 
 	// City
 	GetCityRequest struct {
-		Id int `json:"id"`
+		Id string `json:"id"`
 	}
 
 	GetCityResponse struct {
 		// value untuk unique id, label untuk nama, dibuat seperti ini untuk mengikuti format dari antd
 		Value       string `json:"value"`
 		Label       string `json:"label"`
-		StateId     int    `json:"state_id"`
+		StateId     string `json:"state_id"`
 		StateName   string `json:"state_name"`
-		CountryId   int    `json:"country_id"`
+		CountryId   string `json:"country_id"`
 		CountryName string `json:"country_name"`
 	}
 
@@ -167,7 +181,7 @@ type (
 		// value untuk unique id, label untuk nama, dibuat seperti ini untuk mengikuti format dari antd
 		Value   string `json:"value"`
 		Label   string `json:"label"`
-		OrderNo int    `json:"order_no"`
+		OrderNo string `json:"order_no"`
 	}
 
 	// Owner Status
@@ -179,7 +193,7 @@ type (
 	GetOwnerStatusResponse struct {
 		Value   string `json:"value"`
 		Label   string `json:"label"`
-		OrderNo int    `json:"order_no"`
+		OrderNo string `json:"order_no"`
 	}
 
 	// Stay Status
@@ -191,6 +205,6 @@ type (
 	GetStayStatusResponse struct {
 		Value   string `json:"value"`
 		Label   string `json:"label"`
-		OrderNo int    `json:"order_no"`
+		OrderNo string `json:"order_no"`
 	}
 )

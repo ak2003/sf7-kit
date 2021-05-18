@@ -8,6 +8,7 @@ import (
 
 type Service interface {
 	GetEmployeeInformation(ctx context.Context, req model.GetEmployeeInformationRequest) (error, []model.GetEmployeeInformationResponse)
+	GetEmployeeListing(ctx context.Context, req model.GetEmployeeListingRequest) (error, model.GetEmployeeListingResponse)
 	GetEmployeeEditInformation(ctx context.Context, req model.GetEmployeeByIdRequest) (error, []model.GetEmployeeByIdResponse)
 	GetEmployeeMasterAddress(ctx context.Context, req model.GetEmployeeMasterAddressRequest) (error, []model.GetEmployeeMasterAddressResponse)
 	UpdateEmployeeMasterAddress(ctx context.Context, req model.UpdateEmployeeMasterAddressRequest) (error, string)

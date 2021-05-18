@@ -14,6 +14,7 @@ import (
 
 type Repository interface {
 	GetEmployeeInformation(ctx context.Context, sc model.GetEmployeeInformationRequest) (error, []model.GetEmployeeInformationResponse)
+	GetEmployeeListing(ctx context.Context, sc model.GetEmployeeListingRequest) (error, model.GetEmployeeListingResponse)
 	GetEmployeeEditInformation(ctx context.Context, sc model.GetEmployeeByIdRequest) (error, []model.GetEmployeeByIdResponse)
 	GetEmployeeMasterAddress(ctx context.Context, sc model.GetEmployeeMasterAddressRequest) (error, []model.GetEmployeeMasterAddressResponse)
 	UpdateEmployeeMasterAddress(ctx context.Context, sc model.UpdateEmployeeMasterAddressRequest) (error, string)
@@ -273,7 +274,9 @@ func (repo *repo) GetEmployeeInformation(ctx context.Context, req model.GetEmplo
 	if req.Limit < 1 {
 		req.Limit = 50
 	}
+
 	jumlahSudahTampil = 0
+
 	if req.Page <= 1 {
 		req.Page = 1
 	} else {
@@ -492,6 +495,172 @@ func (repo *repo) GetEmployeeInformation(ctx context.Context, req model.GetEmplo
 	return errData, dataEmployeeInfo
 }
 
+func (repo *repo) GetEmployeeListing(ctx context.Context, req model.GetEmployeeListingRequest) (error, model.GetEmployeeListingResponse) {
+	var (
+		dataEmployeeInfo  []model.GetEmployeeInformationResponse
+		dataListing       model.GetEmployeeListingResponse
+		recordcount       int
+		errData           error
+		queryCount        string
+		queryListing      string
+		jumlahSudahTampil int64
+		paramDataCount    []interface{}
+		paramData         []interface{}
+	)
+
+	// TglSekarang := time.Now()
+	// TglSekarangStr := TglSekarang.Format("2006-01-02 15:04:05")
+
+	if req.Language == "" {
+		req.Language = "en"
+	}
+
+	if req.Limit < 1 {
+		req.Limit = 15
+	}
+
+	jumlahSudahTampil = 0
+
+	if req.Page <= 1 {
+		req.Page = 1
+	} else {
+		jumlahSudahTampil = (req.Page - 1) * req.Limit
+	}
+
+	queryListing = `
+			E.full_name emp_name
+			, E.emp_id
+			, EC.emp_no emp_no
+			, COALESCE(P.pos_name_` + req.Language + `, '') emp_pos
+			, phone_ext
+			, COALESCE(DEPT.pos_name_` + req.Language + `,'') dept
+			, EC.start_date
+			, Grade.grade_name grade
+			, STATUS.employmentstatus_name_` + req.Language + ` status
+			, COALESCE(E.email,'') email
+			, COALESCE(E.photo,'') emp_photo
+			, EP.phone
+			, COALESCE(MAR.name_` + req.Language + `,'') marital_status
+			, EC.end_date
+			, gender_name = CASE WHEN gender = '0' THEN 'Female' ELSE 'Male' END
+			, E.gender
+		FROM
+			TEOMEmpPersonal E
+		LEFT OUTER JOIN TEODEmpPersonal EP ON
+			EP.emp_id = E.emp_id
+		LEFT OUTER JOIN TEODEmpCompany EC ON
+			EC.emp_id = E.emp_id
+		LEFT OUTER JOIN TEOMMarital MAR ON
+			MAR.code = EP.maritalstatus
+		LEFT OUTER JOIN TEOMPosition P ON
+			P.position_id = EC.position_id
+		LEFT OUTER JOIN TEOMPosition Dept ON
+			Dept.position_id = P.dept_id
+		LEFT OUTER JOIN TEOMJobGrade Grade ON
+			Grade.company_id = EC.company_id
+			AND Grade.grade_code = EC.grade_code
+		LEFT OUTER JOIN TEOMEmploymentStatus STATUS ON
+			STATUS.employmentstatus_code = EC.employ_code
+		WHERE
+			EC.company_id = ?
+			AND EC.status = 1 `
+
+	paramDataCount = append(paramDataCount, req.CompanyId)
+
+	queryCount = `SELECT COUNT(*) as recordcount FROM ( SELECT ` + queryListing + `) datasource`
+	queryCount = repo.dbSlave.Rebind(queryCount)
+	rescount, errData := repo.dbSlave.Queryx(queryCount, paramDataCount...)
+	if errData != nil {
+		logger.Error(nil, errData)
+		dataListing = model.GetEmployeeListingResponse{RecordCount: 4, RecordSet: dataEmployeeInfo}
+		return errData, dataListing
+	}
+
+	defer rescount.Close()
+
+	if rescount.Next() {
+		errData := rescount.Scan(&recordcount)
+
+		if errData != nil {
+			logger.Error(nil, errData)
+			rescount.Close()
+			dataListing = model.GetEmployeeListingResponse{RecordCount: 3, RecordSet: dataEmployeeInfo}
+			return errData, dataListing
+		}
+	}
+
+	queryListing = ` SELECT TOP(CAST(? AS INT)) ` + queryListing
+
+	paramData = append(paramData, req.Limit)
+	paramData = append(paramData, paramDataCount...)
+
+	if jumlahSudahTampil > 0 {
+		queryListing = queryListing + ` 
+			AND E.emp_id NOT IN (
+			   SELECT TOP(CAST(? AS INT)) E2.emp_id
+			   FROM TEOMEmpPersonal E2
+			   LEFT OUTER JOIN TEODEmpCompany EC2 ON
+				   EC2.emp_id = E2.emp_id
+			   WHERE EC2.company_id = ?
+				   AND EC2.status = 1
+			   ORDER BY E2.full_name, EC2.emp_no 
+		   ) `
+
+		paramData = append(paramData, jumlahSudahTampil)
+		paramData = append(paramData, req.CompanyId)
+	}
+
+	queryListing = queryListing + ` ORDER BY E.full_name, EC.emp_no `
+	queryListing = repo.dbSlave.Rebind(queryListing)
+	res1, errData := repo.dbSlave.Queryx(queryListing, paramData...)
+
+	fmt.Println(queryListing)
+
+	if errData != nil {
+		logger.Error(nil, errData)
+		dataListing = model.GetEmployeeListingResponse{RecordCount: 2, RecordSet: dataEmployeeInfo}
+		return errData, dataListing
+	}
+
+	defer res1.Close()
+
+	if res1.Next() {
+		var temp model.GetEmployeeInformationResponse
+
+		errData := res1.Scan(&temp.EmployeeName, &temp.EmployeeId, &temp.EmployeeNo, &temp.EmployeePos, &temp.EmployeePhoneExt,
+			&temp.EmployeeDept, &temp.EmployeeStartDate, &temp.EmployeeGrade, &temp.EmployeeStatus, &temp.EmployeeEmail,
+			&temp.EmployeePhoto, &temp.EmployeePhone, &temp.EmployeeMaritalStatus, &temp.EmployeeEndDate, &temp.EmployeeGenderName, &temp.EmployeeGenderCode)
+
+		if errData != nil {
+			logger.Error(nil, errData)
+			res1.Close()
+			dataListing = model.GetEmployeeListingResponse{RecordCount: 1, RecordSet: dataEmployeeInfo}
+			return errData, dataListing
+		}
+
+		dataEmployeeInfo = append(dataEmployeeInfo, temp)
+		for res1.Next() {
+			errData := res1.Scan(&temp.EmployeeName, &temp.EmployeeId, &temp.EmployeeNo, &temp.EmployeePos, &temp.EmployeePhoneExt,
+				&temp.EmployeeDept, &temp.EmployeeStartDate, &temp.EmployeeGrade, &temp.EmployeeStatus, &temp.EmployeeEmail,
+				&temp.EmployeePhoto, &temp.EmployeePhone, &temp.EmployeeMaritalStatus, &temp.EmployeeEndDate, &temp.EmployeeGenderName, &temp.EmployeeGenderCode)
+
+			if errData != nil {
+				logger.Error(nil, errData)
+				res1.Close()
+
+				dataListing = model.GetEmployeeListingResponse{RecordCount: recordcount, RecordSet: dataEmployeeInfo}
+				return errData, dataListing
+			}
+
+			dataEmployeeInfo = append(dataEmployeeInfo, temp)
+		}
+	}
+
+	dataListing = model.GetEmployeeListingResponse{RecordCount: recordcount, RecordSet: dataEmployeeInfo}
+
+	return errData, dataListing
+}
+
 func (repo *repo) GetCity(ctx context.Context, req model.GetCityRequest) (error, []model.GetCityResponse) {
 	var (
 		recordset   []model.GetCityResponse
@@ -515,7 +684,7 @@ func (repo *repo) GetCity(ctx context.Context, req model.GetCityRequest) (error,
 			ON STE.country_id = CTR.country_id
 		WHERE 1=1 `
 
-	if req.Id != 0 {
+	if req.Id != "" {
 		paramData = append(paramData, req.Id)
 		queryString = queryString + ` AND CTY.city_id = ? `
 	}

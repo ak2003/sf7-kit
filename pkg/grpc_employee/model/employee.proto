@@ -3,12 +3,12 @@ option go_package = "protoc/model";
 package model;
 
 message GetEmployeeInformationRequest {
-    string CompanyId = 1;
+    int64 CompanyId = 1;
     string EmployeeId = 2;
     string Language = 3;
     string UserId = 4;
-    string Page = 5;
-    string Limit = 6;
+    int64 Page = 5;
+    int64 Limit = 6;
 }
 
 message GetEmployeeInformationResponse {

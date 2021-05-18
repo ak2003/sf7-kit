@@ -12,6 +12,7 @@ import (
 
 type Endpoints struct {
 	GetEmployeeInformation      endpoint.Endpoint
+	GetEmployeeListing          endpoint.Endpoint
 	GetEmployeeEditInformation  endpoint.Endpoint
 	GetEmployeeMasterAddress    endpoint.Endpoint
 	UpdateEmployeeMasterAddress endpoint.Endpoint
@@ -25,6 +26,7 @@ type Endpoints struct {
 func MakeEndpoints(s Service) Endpoints {
 	return Endpoints{
 		GetEmployeeInformation:      makeGetEmployeeInformationEndpoint(s),
+		GetEmployeeListing:          makeGetEmployeeListingEndpoint(s),
 		GetEmployeeEditInformation:  makeGetEmployeeEditInformationEndpoint(s),
 		GetEmployeeMasterAddress:    makeGetEmployeeMasterAddressEndpoint(s),
 		UpdateEmployeeMasterAddress: makeUpdateEmployeeMasterAddressEndpoint(s),
@@ -97,6 +99,25 @@ func makeGetEmployeeInformationEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(model.GetEmployeeInformationRequest)
 		err, msg := s.GetEmployeeInformation(ctx, req)
+		httpCode := http.StatusOK
+		if err != nil {
+			httpCode = http.StatusUnprocessableEntity
+		}
+		responseBody := response.Body{Message: http.StatusText(httpCode), Data: msg}
+		return response.CreateResponseWithStatusCode{
+			ResponseJson: response.CreateResponse{
+				Err:      err,
+				RespBody: responseBody,
+			},
+			StatusCode: httpCode,
+		}, nil
+	}
+}
+
+func makeGetEmployeeListingEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(model.GetEmployeeListingRequest)
+		err, msg := s.GetEmployeeListing(ctx, req)
 		httpCode := http.StatusOK
 		if err != nil {
 			httpCode = http.StatusUnprocessableEntity
