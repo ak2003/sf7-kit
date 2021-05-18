@@ -17,6 +17,15 @@ func decodeGetEmployeeInformationReq(ctx context.Context, r *http.Request) (inte
 	return req, nil
 }
 
+func decodeGetEmployeeListingReq(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req model.GetEmployeeListingRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
 func decodeGetEmployeeEditInformationReq(ctx context.Context, r *http.Request) (interface{}, error) {
 	var req model.GetEmployeeByIdRequest
 	err := json.NewDecoder(r.Body).Decode(&req)

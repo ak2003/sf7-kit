@@ -28,10 +28,16 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints, r *mux.Router) *mux
 
 	apiv1Sf7 := apiv1.PathPrefix("/sf7").Subrouter()
 	apiv1Sf7Employee := apiv1Sf7.PathPrefix("/employee").Subrouter()
-	// Add To cart
+
 	apiv1Sf7Employee.Methods("POST").Path("/information").Handler(httpTransport.NewServer(
 		endpoints.GetEmployeeInformation,
 		decodeGetEmployeeInformationReq,
+		response.EncodeJsonWithStatusCode,
+	))
+
+	apiv1Sf7Employee.Methods("POST").Path("/employeeListing").Handler(httpTransport.NewServer(
+		endpoints.GetEmployeeListing,
+		decodeGetEmployeeListingReq,
 		response.EncodeJsonWithStatusCode,
 	))
 

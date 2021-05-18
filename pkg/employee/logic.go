@@ -51,6 +51,19 @@ func (s service) GetEmployeeInformation(ctx context.Context, param model.GetEmpl
 	return nil, dp
 }
 
+func (s service) GetEmployeeListing(ctx context.Context, param model.GetEmployeeListingRequest) (error, model.GetEmployeeListingResponse) {
+	//logDetail := logger.MakeLogEntry("product", "DetailProduct")
+	//level.Info(logDetail).Log("param-id", param.Id)
+
+	err, dp := s.repository.GetEmployeeListing(ctx, param)
+	if err != nil {
+		logger.Error(nil, err)
+		return nil, dp
+	}
+
+	return nil, dp
+}
+
 func (s service) GetEmployeeEditInformation(ctx context.Context, param model.GetEmployeeByIdRequest) (error, []model.GetEmployeeByIdResponse) {
 	err, dp := s.repository.GetEmployeeEditInformation(ctx, param)
 	if err != nil {
