@@ -1,4 +1,4 @@
-package example
+package grpc_employee
 
 import (
 	"context"
@@ -29,7 +29,7 @@ func makeGetEmployeeInformationEndpoint(s Service) endpoint.Endpoint {
 		if err != nil {
 			httpCode = http.StatusUnprocessableEntity
 		}
-		responseBody := response.Body{Message: http.StatusText(httpCode), Data: resp.List}
+		responseBody := response.Body{Message: http.StatusText(httpCode), Data: resp}
 		return response.CreateResponseWithStatusCode{
 			ResponseJson: response.CreateResponse{
 				Err:      err,
