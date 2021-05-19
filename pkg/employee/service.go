@@ -13,6 +13,8 @@ type Service interface {
 	GetEmployeeMasterAddress(ctx context.Context, req model.GetEmployeeMasterAddressRequest) (error, []model.GetEmployeeMasterAddressResponse)
 	UpdateEmployeeMasterAddress(ctx context.Context, req model.UpdateEmployeeMasterAddressRequest) (error, string)
 	CreateEmployeeMasterAddress(ctx context.Context, req model.CreateEmployeeMasterAddressRequest) (error, string)
+	GetEmploymentStatus(ctx context.Context, req model.GetEmploymentStatusRequest) (error, []model.GetEmploymentStatusResponse)
+	GetJobGrade(ctx context.Context, req model.GetJobGradeRequest) (error, []model.GetJobGradeResponse)
 	GetCity(ctx context.Context, req model.GetCityRequest) (error, []model.GetCityResponse)
 	GetAddressType(ctx context.Context, req model.GetAddressTypeRequest) (error, []model.GetAddressTypeResponse)
 	GetOwnerStatus(ctx context.Context, req model.GetOwnerStatusRequest) (error, []model.GetOwnerStatusResponse)

@@ -17,6 +17,8 @@ type Endpoints struct {
 	GetEmployeeMasterAddress    endpoint.Endpoint
 	UpdateEmployeeMasterAddress endpoint.Endpoint
 	CreateEmployeeMasterAddress endpoint.Endpoint
+	GetEmploymentStatus         endpoint.Endpoint
+	GetJobGrade                 endpoint.Endpoint
 	GetCity                     endpoint.Endpoint
 	GetAddressType              endpoint.Endpoint
 	GetOwnerStatus              endpoint.Endpoint
@@ -31,6 +33,8 @@ func MakeEndpoints(s Service) Endpoints {
 		GetEmployeeMasterAddress:    makeGetEmployeeMasterAddressEndpoint(s),
 		UpdateEmployeeMasterAddress: makeUpdateEmployeeMasterAddressEndpoint(s),
 		CreateEmployeeMasterAddress: makeCreateEmployeeMasterAddressEndpoint(s),
+		GetEmploymentStatus:         makeGetEmploymentStatusEndpoint(s),
+		GetJobGrade:                 makeGetJobGradeEndpoint(s),
 		GetCity:                     makeGetCityEndpoint(s),
 		GetAddressType:              makeGetAddressTypeEndpoint(s),
 		GetOwnerStatus:              makeGetOwnerStatusEndpoint(s),
@@ -145,6 +149,44 @@ func makeGetEmployeeEditInformationEndpoint(s Service) endpoint.Endpoint {
 		return response.CreateResponseWithStatusCode{
 			ResponseJson: response.CreateResponse{
 				Err:      nil,
+				RespBody: responseBody,
+			},
+			StatusCode: httpCode,
+		}, nil
+	}
+}
+
+func makeGetEmploymentStatusEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(model.GetEmploymentStatusRequest)
+		err, msg := s.GetEmploymentStatus(ctx, req)
+		httpCode := http.StatusOK
+		if err != nil {
+			httpCode = http.StatusUnprocessableEntity
+		}
+		responseBody := response.Body{Message: http.StatusText(httpCode), Data: msg}
+		return response.CreateResponseWithStatusCode{
+			ResponseJson: response.CreateResponse{
+				Err:      err,
+				RespBody: responseBody,
+			},
+			StatusCode: httpCode,
+		}, nil
+	}
+}
+
+func makeGetJobGradeEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(model.GetJobGradeRequest)
+		err, msg := s.GetJobGrade(ctx, req)
+		httpCode := http.StatusOK
+		if err != nil {
+			httpCode = http.StatusUnprocessableEntity
+		}
+		responseBody := response.Body{Message: http.StatusText(httpCode), Data: msg}
+		return response.CreateResponseWithStatusCode{
+			ResponseJson: response.CreateResponse{
+				Err:      err,
 				RespBody: responseBody,
 			},
 			StatusCode: httpCode,

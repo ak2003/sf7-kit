@@ -33,17 +33,42 @@ type (
 	}
 
 	GetEmployeeListingRequest struct {
-		CompanyId  int64  `json:"company_id" binding:"required"`
-		EmployeeId string `json:"employee_id" binding:"required"`
-		Language   string `json:"language"`
-		UserId     string `json:"user_id"`
-		Page       int64  `json:"page"`
-		Limit      int64  `json:"limit"`
+		CompanyId              int64    `json:"company_id" binding:"required"`
+		EmployeeId             string   `json:"employee_id" binding:"required"`
+		Language               string   `json:"language"`
+		UserId                 string   `json:"user_id"`
+		FilterStatus           []string `json:"filter_status"`
+		FilterGender           []string `json:"filter_gender"`
+		FilterJoinDate         string   `json:"filter_join_date"`
+		FilterEmploymentStatus []string `json:"filter_employment_status"`
+		FilterGrade            []string `json:"filter_grade"`
+		Page                   int64    `json:"page"`
+		Limit                  int64    `json:"limit"`
+	}
+
+	GetEmployeeResponse struct {
+		EmployeeName          string     `json:"employee_name"`
+		EmployeeId            string     `json:"employee_id"`
+		EmployeeNo            string     `json:"employee_no"`
+		EmployeePos           string     `json:"employee_pos"`
+		EmployeePhoneExt      *string    `json:"employee_phone_ext"`
+		EmployeeDept          string     `json:"employee_dept"`
+		EmployeeStartDate     time.Time  `json:"employee_start_date"`
+		EmployeeGrade         string     `json:"employee_grade"`
+		EmployeeStatus        string     `json:"employee_status"`
+		EmployeeEmail         string     `json:"employee_email"`
+		EmployeePhoto         string     `json:"employee_photo"`
+		EmployeePhone         *string    `json:"employee_phone"`
+		EmployeeMaritalStatus string     `json:"employee_marital_status"`
+		EmployeeEndDate       *time.Time `json:"employee_end_date"`
+		EmployeeGenderName    string     `json:"employee_gender_name"`
+		EmployeeReqFlag       string     `json:"employee_req_flag"`
+		EmployeeGenderCode    string     `json:"employee_gender_code"`
 	}
 
 	GetEmployeeListingResponse struct {
-		RecordCount int                              `json:"recordcount"`
-		RecordSet   []GetEmployeeInformationResponse `json:"recordset"`
+		RecordCount int                   `json:"recordcount"`
+		RecordSet   []GetEmployeeResponse `json:"recordset"`
 	}
 
 	GetEmployeeByIdRequest struct {
@@ -155,6 +180,30 @@ type (
 	/*
 		======================= MASTER DATA ========================
 	*/
+
+	// Employment Status
+	GetEmploymentStatusRequest struct {
+		Language string `json:"language"`
+		Code     string `json:"code"`
+	}
+
+	GetEmploymentStatusResponse struct {
+		Value   string `json:"value"`
+		Label   string `json:"label"`
+		OrderNo string `json:"order_no"`
+	}
+
+	// Grade
+	GetJobGradeRequest struct {
+		CompanyId int64  `json:"company_id"`
+		Code      string `json:"code"`
+	}
+
+	GetJobGradeResponse struct {
+		Value   string `json:"value"`
+		Label   string `json:"label"`
+		OrderNo string `json:"order_no"`
+	}
 
 	// City
 	GetCityRequest struct {

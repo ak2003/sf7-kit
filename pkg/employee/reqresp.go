@@ -62,6 +62,24 @@ func decodeGetEmployeeCreateAddressReq(ctx context.Context, r *http.Request) (in
 	return req, nil
 }
 
+func decodeGetEmploymentStatusReq(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req model.GetEmploymentStatusRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
+func decodeGetJobGradeReq(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req model.GetJobGradeRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
 func decodeGetCityReq(ctx context.Context, r *http.Request) (interface{}, error) {
 	var req model.GetCityRequest
 	err := json.NewDecoder(r.Body).Decode(&req)

@@ -19,6 +19,8 @@ type Repository interface {
 	GetEmployeeMasterAddress(ctx context.Context, sc model.GetEmployeeMasterAddressRequest) (error, []model.GetEmployeeMasterAddressResponse)
 	UpdateEmployeeMasterAddress(ctx context.Context, sc model.UpdateEmployeeMasterAddressRequest) (error, string)
 	CreateEmployeeMasterAddress(ctx context.Context, sc model.CreateEmployeeMasterAddressRequest) (error, string)
+	GetEmploymentStatus(ctx context.Context, sc model.GetEmploymentStatusRequest) (error, []model.GetEmploymentStatusResponse)
+	GetJobGrade(ctx context.Context, sc model.GetJobGradeRequest) (error, []model.GetJobGradeResponse)
 	GetCity(ctx context.Context, sc model.GetCityRequest) (error, []model.GetCityResponse)
 	GetAddressType(ctx context.Context, sc model.GetAddressTypeRequest) (error, []model.GetAddressTypeResponse)
 	GetOwnerStatus(ctx context.Context, sc model.GetOwnerStatusRequest) (error, []model.GetOwnerStatusResponse)
@@ -497,14 +499,16 @@ func (repo *repo) GetEmployeeInformation(ctx context.Context, req model.GetEmplo
 
 func (repo *repo) GetEmployeeListing(ctx context.Context, req model.GetEmployeeListingRequest) (error, model.GetEmployeeListingResponse) {
 	var (
-		dataEmployeeInfo  []model.GetEmployeeInformationResponse
+		dataEmployeeInfo  []model.GetEmployeeResponse
 		dataListing       model.GetEmployeeListingResponse
 		recordcount       int
 		errData           error
 		queryCount        string
 		queryListing      string
+		queryFilter       string
 		jumlahSudahTampil int64
 		paramDataCount    []interface{}
+		paramDataFilter   []interface{}
 		paramData         []interface{}
 	)
 
@@ -559,6 +563,9 @@ func (repo *repo) GetEmployeeListing(ctx context.Context, req model.GetEmployeeL
 		LEFT OUTER JOIN TEOMJobGrade Grade ON
 			Grade.company_id = EC.company_id
 			AND Grade.grade_code = EC.grade_code
+		LEFT JOIN TEOMGRADECATEGORY GRC
+			ON Grade.company_id = GRC.company_id
+			AND Grade.gradecategory_code = GRC.gradecategory_code
 		LEFT OUTER JOIN TEOMEmploymentStatus STATUS ON
 			STATUS.employmentstatus_code = EC.employ_code
 		WHERE
@@ -567,9 +574,58 @@ func (repo *repo) GetEmployeeListing(ctx context.Context, req model.GetEmployeeL
 
 	paramDataCount = append(paramDataCount, req.CompanyId)
 
-	queryCount = `SELECT COUNT(*) as recordcount FROM ( SELECT ` + queryListing + `) datasource`
+	if len(req.FilterStatus) > 0 {
+		query, args, _ := sqlx.In(` AND E.status IN (?) `, req.FilterStatus)
+		queryFilter = queryFilter + query
+
+		for _, argss := range args {
+			paramDataFilter = append(paramDataFilter, argss)
+		}
+	}
+
+	if len(req.FilterGender) > 0 {
+		query, args, _ := sqlx.In(` AND E.gender IN (?) `, req.FilterGender)
+		queryFilter = queryFilter + query
+
+		for _, argss := range args {
+			paramDataFilter = append(paramDataFilter, argss)
+		}
+	}
+
+	if req.FilterJoinDate != "" {
+		queryFilter = queryFilter + ` AND EC.start_date >= ? `
+		paramDataFilter = append(paramDataFilter, req.FilterJoinDate)
+	}
+
+	if len(req.FilterEmploymentStatus) > 0 {
+		query, args, _ := sqlx.In(` AND EC.employ_code IN (?) `, req.FilterEmploymentStatus)
+		queryFilter = queryFilter + query
+
+		for _, argss := range args {
+			paramDataFilter = append(paramDataFilter, argss)
+		}
+	}
+
+	if len(req.FilterGrade) > 0 {
+		query, args, _ := sqlx.In(` AND GRC.gradecategory_code IN (?) `, req.FilterGrade)
+		queryFilter = queryFilter + query
+
+		for _, argss := range args {
+			paramDataFilter = append(paramDataFilter, argss)
+		}
+	}
+
+	paramDataCount = append(paramDataCount, paramDataFilter...)
+
+	queryCount = `SELECT COUNT(*) as recordcount FROM ( SELECT ` + queryListing + ` ` + queryFilter + `) datasource`
 	queryCount = repo.dbSlave.Rebind(queryCount)
+
+	fmt.Println(paramDataCount)
+	fmt.Println("================ query count ==================")
+	fmt.Println(queryCount)
+
 	rescount, errData := repo.dbSlave.Queryx(queryCount, paramDataCount...)
+
 	if errData != nil {
 		logger.Error(nil, errData)
 		dataListing = model.GetEmployeeListingResponse{RecordCount: 4, RecordSet: dataEmployeeInfo}
@@ -589,7 +645,7 @@ func (repo *repo) GetEmployeeListing(ctx context.Context, req model.GetEmployeeL
 		}
 	}
 
-	queryListing = ` SELECT TOP(CAST(? AS INT)) ` + queryListing
+	queryListing = ` SELECT TOP(CAST(? AS INT)) ` + queryListing + ` ` + queryFilter
 
 	paramData = append(paramData, req.Limit)
 	paramData = append(paramData, paramDataCount...)
@@ -597,23 +653,33 @@ func (repo *repo) GetEmployeeListing(ctx context.Context, req model.GetEmployeeL
 	if jumlahSudahTampil > 0 {
 		queryListing = queryListing + ` 
 			AND E.emp_id NOT IN (
-			   SELECT TOP(CAST(? AS INT)) E2.emp_id
-			   FROM TEOMEmpPersonal E2
-			   LEFT OUTER JOIN TEODEmpCompany EC2 ON
-				   EC2.emp_id = E2.emp_id
-			   WHERE EC2.company_id = ?
-				   AND EC2.status = 1
-			   ORDER BY E2.full_name, EC2.emp_no 
+				SELECT TOP(CAST(? AS INT)) E.emp_id
+				FROM TEOMEmpPersonal E
+				LEFT OUTER JOIN TEODEmpCompany EC ON
+					EC.emp_id = E.emp_id
+				LEFT OUTER JOIN TEOMJobGrade Grade ON
+					Grade.company_id = EC.company_id
+					AND Grade.grade_code = EC.grade_code
+				LEFT JOIN TEOMGRADECATEGORY GRC
+					ON Grade.company_id = GRC.company_id
+					AND Grade.gradecategory_code = GRC.gradecategory_code
+				WHERE EC.company_id = ?
+					AND EC.status = 1
+					` + queryFilter + `
+				ORDER BY E.full_name, EC.emp_no 
 		   ) `
 
 		paramData = append(paramData, jumlahSudahTampil)
 		paramData = append(paramData, req.CompanyId)
+		paramData = append(paramData, paramDataFilter...)
 	}
 
 	queryListing = queryListing + ` ORDER BY E.full_name, EC.emp_no `
 	queryListing = repo.dbSlave.Rebind(queryListing)
 	res1, errData := repo.dbSlave.Queryx(queryListing, paramData...)
 
+	fmt.Println(paramData)
+	fmt.Println("================ query listing ==================")
 	fmt.Println(queryListing)
 
 	if errData != nil {
@@ -625,7 +691,7 @@ func (repo *repo) GetEmployeeListing(ctx context.Context, req model.GetEmployeeL
 	defer res1.Close()
 
 	if res1.Next() {
-		var temp model.GetEmployeeInformationResponse
+		var temp model.GetEmployeeResponse
 
 		errData := res1.Scan(&temp.EmployeeName, &temp.EmployeeId, &temp.EmployeeNo, &temp.EmployeePos, &temp.EmployeePhoneExt,
 			&temp.EmployeeDept, &temp.EmployeeStartDate, &temp.EmployeeGrade, &temp.EmployeeStatus, &temp.EmployeeEmail,
@@ -880,6 +946,128 @@ func (repo *repo) GetStayStatus(ctx context.Context, req model.GetStayStatusRequ
 
 	if res.Next() {
 		var temp model.GetStayStatusResponse
+
+		errData := res.Scan(&temp.Value, &temp.Label, &temp.OrderNo)
+		if errData != nil {
+			logger.Error(nil, errData)
+			res.Close()
+			return errData, recordset
+		}
+
+		recordset = append(recordset, temp)
+		for res.Next() {
+			errData := res.Scan(&temp.Value, &temp.Label, &temp.OrderNo)
+			if errData != nil {
+				logger.Error(nil, errData)
+				res.Close()
+				return errData, recordset
+			}
+
+			recordset = append(recordset, temp)
+		}
+	}
+	return errData, recordset
+}
+
+func (repo *repo) GetEmploymentStatus(ctx context.Context, req model.GetEmploymentStatusRequest) (error, []model.GetEmploymentStatusResponse) {
+	var (
+		recordset   []model.GetEmploymentStatusResponse
+		errData     error
+		queryString string
+		paramData   []interface{}
+	)
+
+	if req.Language == "" {
+		req.Language = "en"
+	}
+
+	queryString = `SELECT employmentstatus_code, employmentstatus_name_` + req.Language + `, order_no FROM TEOMEmploymentStatus WHERE 1=1 `
+
+	// untuk data dummy, perlu dilimit agar tidak kebanyakan
+	queryString = queryString + ` AND employmentstatus_code IN ('CONTRACT','CONTRACT1','HONORER','internship','Outsource','PERMANENT') `
+
+	// paramData = append(paramData, req.CompanyId)
+	// paramData = append(paramData, req.UserId)
+	// paramData = append(paramData, req.EmployeeId)
+	if req.Code != "" {
+		paramData = append(paramData, req.Code)
+		queryString = queryString + ` AND employmentstatus_code = ? `
+	}
+
+	queryString = queryString + ` ORDER BY employmentstatus_name_` + req.Language + ` `
+
+	queryString = repo.dbSlave.Rebind(queryString)
+	res, errData := repo.dbSlave.Queryx(queryString, paramData...)
+
+	if errData != nil {
+		logger.Error(nil, errData)
+		return errData, recordset
+	}
+
+	defer res.Close()
+
+	if res.Next() {
+		var temp model.GetEmploymentStatusResponse
+
+		errData := res.Scan(&temp.Value, &temp.Label, &temp.OrderNo)
+		if errData != nil {
+			logger.Error(nil, errData)
+			res.Close()
+			return errData, recordset
+		}
+
+		recordset = append(recordset, temp)
+		for res.Next() {
+			errData := res.Scan(&temp.Value, &temp.Label, &temp.OrderNo)
+			if errData != nil {
+				logger.Error(nil, errData)
+				res.Close()
+				return errData, recordset
+			}
+
+			recordset = append(recordset, temp)
+		}
+	}
+	return errData, recordset
+}
+
+func (repo *repo) GetJobGrade(ctx context.Context, req model.GetJobGradeRequest) (error, []model.GetJobGradeResponse) {
+	var (
+		recordset   []model.GetJobGradeResponse
+		errData     error
+		queryString string
+		paramData   []interface{}
+	)
+
+	queryString = `SELECT gradecategory_code, gradecategory_name, order_id FROM TEOMGRADECATEGORY WHERE 1=1 AND company_id = ? `
+
+	// untuk data dummy, perlu dilimit agar tidak kebanyakan
+	queryString = queryString + ` AND gradecategory_code IN ('DEPHD','MANAGER','STAFF','SUPERVISOR') `
+
+	paramData = append(paramData, req.CompanyId)
+
+	// paramData = append(paramData, req.UserId)
+	// paramData = append(paramData, req.EmployeeId)
+
+	if req.Code != "" {
+		paramData = append(paramData, req.Code)
+		queryString = queryString + ` AND gradecategory_code = ? `
+	}
+
+	queryString = queryString + ` ORDER BY gradecategory_name `
+
+	queryString = repo.dbSlave.Rebind(queryString)
+	res, errData := repo.dbSlave.Queryx(queryString, paramData...)
+
+	if errData != nil {
+		logger.Error(nil, errData)
+		return errData, recordset
+	}
+
+	defer res.Close()
+
+	if res.Next() {
+		var temp model.GetJobGradeResponse
 
 		errData := res.Scan(&temp.Value, &temp.Label, &temp.OrderNo)
 		if errData != nil {

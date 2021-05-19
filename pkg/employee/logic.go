@@ -84,6 +84,26 @@ func (s service) GetEmployeeMasterAddress(ctx context.Context, param model.GetEm
 	return nil, dp
 }
 
+func (s service) GetEmploymentStatus(ctx context.Context, param model.GetEmploymentStatusRequest) (error, []model.GetEmploymentStatusResponse) {
+	err, dp := s.repository.GetEmploymentStatus(ctx, param)
+	if err != nil {
+		logger.Error(nil, err)
+		return nil, dp
+	}
+
+	return nil, dp
+}
+
+func (s service) GetJobGrade(ctx context.Context, param model.GetJobGradeRequest) (error, []model.GetJobGradeResponse) {
+	err, dp := s.repository.GetJobGrade(ctx, param)
+	if err != nil {
+		logger.Error(nil, err)
+		return nil, dp
+	}
+
+	return nil, dp
+}
+
 func (s service) GetCity(ctx context.Context, param model.GetCityRequest) (error, []model.GetCityResponse) {
 	err, dp := s.repository.GetCity(ctx, param)
 	if err != nil {

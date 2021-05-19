@@ -65,6 +65,18 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints, r *mux.Router) *mux
 		response.EncodeJsonWithStatusCode,
 	))
 
+	apiv1Sf7Employee.Methods("POST").Path("/getEmploymentStatus").Handler(httpTransport.NewServer(
+		endpoints.GetEmploymentStatus,
+		decodeGetEmploymentStatusReq,
+		response.EncodeJsonWithStatusCode,
+	))
+
+	apiv1Sf7Employee.Methods("POST").Path("/getJobGrade").Handler(httpTransport.NewServer(
+		endpoints.GetJobGrade,
+		decodeGetJobGradeReq,
+		response.EncodeJsonWithStatusCode,
+	))
+
 	apiv1Sf7Employee.Methods("POST").Path("/getCity").Handler(httpTransport.NewServer(
 		endpoints.GetCity,
 		decodeGetCityReq,
