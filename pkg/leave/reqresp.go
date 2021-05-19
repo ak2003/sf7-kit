@@ -43,3 +43,12 @@ func decodeGetDataRequestForReq(ctx context.Context, r *http.Request) (interface
 	}
 	return req, nil
 }
+
+func decodeGetDataRemainingLeaveReq(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req model.GetDataRemainingLeaveReq
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		return nil, err
+	}
+	return req, nil
+}

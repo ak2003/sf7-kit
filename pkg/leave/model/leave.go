@@ -88,4 +88,25 @@ type (
 		EmployeeName  string `json:"employee_name"`
 		EmployeeTitle string `json:"employee_title"`
 	}
+
+	GetDataRemainingLeaveReq struct {
+		CompanyId  	*int64 `json:"company_id" binding:"required"`
+		EmployeeId 	string `json:"employee_id"`
+		LeaveCode 	string `json:"leave_code"`
+	}
+
+	GetDataRemainingLeaveResponse struct {
+		StartValidDate  time.Time 	`json:"startvaliddate"`
+		Remaining  		string 		`json:"remaining"`
+		RequiredRefDoc 	string 		`json:"required_refdoc"`
+		RequiredRemark 	string 		`json:"required_remark"`
+	}
+
+	GetDataRequiredRefDocResponse struct {
+		RequiredRefDoc 	string 		`json:"required_refdoc"`
+	}
+
+	GetDataRequiredRemarkResponse struct {
+		RequiredRemark 	string 		`json:"required_remark"`
+	}
 )

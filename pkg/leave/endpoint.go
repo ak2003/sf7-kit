@@ -16,6 +16,7 @@ type Endpoints struct {
 	GetLeaveRequestFilterListing endpoint.Endpoint
 	GetDataTypeOfLeave           endpoint.Endpoint
 	GetDataRequestFor            endpoint.Endpoint
+	GetDataRemainingLeave        endpoint.Endpoint
 }
 
 func MakeEndpoints(s Service) Endpoints {
@@ -24,6 +25,35 @@ func MakeEndpoints(s Service) Endpoints {
 		GetLeaveRequestFilterListing: makeGetLeaveRequestFilterListingEndpoint(s),
 		GetDataTypeOfLeave:           makeGetDataTypeOfLeaveEndpoint(s),
 		GetDataRequestFor:            makeGetDataRequestForEndpoint(s),
+		GetDataRemainingLeave:        makeGetDataRemainingLeaveEndpoint(s),
+	}
+}
+
+func makeGetDataRemainingLeaveEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(model.GetDataRemainingLeaveReq)
+		err, datas := s.GetDataRemainingLeave(ctx, req)
+		httpCode := http.StatusOK
+		var msg string
+		msg = http.StatusText(httpCode)
+		if err != nil {
+			httpCode = http.StatusUnprocessableEntity
+			if strings.Contains(err.Error(), "mandatory") {
+				httpCode = http.StatusBadRequest
+				msg = err.Error()
+			} else {
+				msg = http.StatusText(httpCode)
+			}
+		}
+
+		responseBody := response.Body{Message: msg, Data: datas}
+		return response.CreateResponseWithStatusCode{
+			ResponseJson: response.CreateResponse{
+				Err:      err,
+				RespBody: responseBody,
+			},
+			StatusCode: httpCode,
+		}, nil
 	}
 }
 

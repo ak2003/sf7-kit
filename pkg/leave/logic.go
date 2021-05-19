@@ -17,6 +17,19 @@ func NewService(rep Repository) Service {
 	}
 }
 
+func (s service) GetDataRemainingLeave(ctx context.Context, param model.GetDataRemainingLeaveReq) (error, []model.GetDataRemainingLeaveResponse) {
+	//logDetail := logger.MakeLogEntry("product", "DetailProduct")
+	//level.Info(logDetail).Log("param-id", param.Id)
+
+	err, dp := s.repository.GetDataRemainingLeave(ctx, param)
+	if err != nil {
+		logger.Error(nil, err)
+		return err, dp
+	}
+
+	return nil, dp
+}
+
 func (s service) GetDataRequestFor(ctx context.Context, param model.GetDataRequestForReq) (error, []model.GetDataRequestForResponse) {
 	//logDetail := logger.MakeLogEntry("product", "DetailProduct")
 	//level.Info(logDetail).Log("param-id", param.Id)

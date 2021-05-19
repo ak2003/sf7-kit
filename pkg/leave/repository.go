@@ -17,6 +17,7 @@ type Repository interface {
 	GetLeaveRequestFilterListing(ctx context.Context, sc model.GetLeaveRequestListingFilterRequest) (error, []model.GetLeaveRequestListingFilterResponse)
 	GetDataTypeOfLeave(ctx context.Context, sc model.GetDataTypeOfLeaveReq) (error, []model.GetDataTypeOfLeaveResponse)
 	GetDataRequestFor(ctx context.Context, sc model.GetDataRequestForReq) (error, []model.GetDataRequestForResponse)
+	GetDataRemainingLeave(ctx context.Context, sc model.GetDataRemainingLeaveReq) (error, []model.GetDataRemainingLeaveResponse)
 }
 
 type repo struct {
@@ -29,6 +30,161 @@ func NewRepo(dbSlave, dbMaster *sqlx.DB) Repository {
 		dbSlave:  dbSlave,
 		dbMaster: dbMaster,
 	}
+}
+
+func (repo *repo) GetDataRemainingLeave(ctx context.Context, req model.GetDataRemainingLeaveReq) (error, []model.GetDataRemainingLeaveResponse) {
+	var (
+		dataRemainingLeave      []model.GetDataRemainingLeaveResponse
+		errData             	error
+		queryDataRemainingLeave string
+		queryDataRequiredRefDoc string
+		queryDataRequiredRemark string
+		paramData           	[]interface{}
+		paramDataRefDoc       	[]interface{}
+		paramDataRemark       	[]interface{}
+	)
+
+	if req.CompanyId == nil {
+		errData = errors.New("company_id is mandatory")
+		return errData, dataRemainingLeave
+	}
+	
+	LeaveCodeSplit := strings.Split(req.LeaveCode, "|")
+
+	paramData = append(paramData, req.EmployeeId)
+	paramData = append(paramData, LeaveCodeSplit[0])
+	paramData = append(paramData, req.CompanyId)
+	queryDataRemainingLeave = `SELECT startvaliddate, remaining
+							FROM TTADEMPGETLEAVE
+							WHERE emp_id = ?
+							AND leave_code = ?
+							AND active_status = 1
+							AND company_id = ?
+							AND (
+								endvaliddate >= getdate()
+								OR
+								endvaliddate IS NULL
+							)
+							order by startvaliddate,endvaliddate asc`
+
+	queryDataRemainingLeave = repo.dbSlave.Rebind(queryDataRemainingLeave)
+	res1, errData := repo.dbSlave.Queryx(queryDataRemainingLeave, paramData...)
+	if errData != nil {
+		logger.Error(nil, errData)
+		// logger.Println(queryListing)
+		return errData, dataRemainingLeave
+	}
+
+	defer res1.Close()
+	
+	if res1.Next() {
+		var temp model.GetDataRemainingLeaveResponse
+		errData := res1.Scan(&temp.StartValidDate, &temp.Remaining)
+		if errData != nil {
+			logger.Error(nil, errData)
+			// logger.Println(queryListing)
+			res1.Close()
+			return errData, dataRemainingLeave
+		}
+
+		// Start Process Required RefDoc
+		paramDataRefDoc = append(paramDataRefDoc, LeaveCodeSplit[0])
+		paramDataRefDoc = append(paramDataRefDoc, req.CompanyId)
+		queryDataRequiredRefDoc = `SELECT requiredattachment
+								FROM TTAMLEAVETYPE
+								WHERE leave_code = ?
+								AND company_id = ?`
+
+		queryDataRequiredRefDoc = repo.dbSlave.Rebind(queryDataRequiredRefDoc)
+		res2, errData2 := repo.dbSlave.Queryx(queryDataRequiredRefDoc, paramDataRefDoc...)
+		if errData2 != nil {
+			logger.Error(nil, errData2)
+			// logger.Println(queryListing)
+			return errData2, dataRemainingLeave
+		}
+
+		defer res2.Close()
+
+		if res2.Next() {
+			var temp2 model.GetDataRequiredRefDocResponse
+			errData2 := res2.Scan(&temp2.RequiredRefDoc)
+			if errData2 != nil {
+				logger.Error(nil, errData2)
+				// logger.Println(queryListing)
+				res2.Close()
+				return errData2, dataRemainingLeave
+			}
+
+			for res2.Next() {
+				errData2 := res2.Scan(&temp2.RequiredRefDoc)
+				if errData2 != nil {
+					logger.Error(nil, errData2)
+					// logger.Println(queryListing)
+					res2.Close()
+					return errData2, dataRemainingLeave
+				}
+			}
+
+			temp.RequiredRefDoc = temp2.RequiredRefDoc
+		}
+		// End Process Required RefDoc
+
+		// Start Process Required Remark
+		paramDataRemark = append(paramDataRemark, req.CompanyId)
+		queryDataRequiredRemark = `SELECT field_value
+								FROM TCLCAPPCOMPANY
+								WHERE field_code = 'remarkisrequired'
+								AND company_id = ?`
+
+		queryDataRequiredRemark = repo.dbSlave.Rebind(queryDataRequiredRemark)
+		res3, errData3 := repo.dbSlave.Queryx(queryDataRequiredRemark, paramDataRemark...)
+		if errData3 != nil {
+			logger.Error(nil, errData3)
+			// logger.Println(queryListing)
+			return errData3, dataRemainingLeave
+		}
+
+		defer res3.Close()
+
+		if res3.Next() {
+			var temp2 model.GetDataRequiredRemarkResponse
+			errData3 := res3.Scan(&temp2.RequiredRemark)
+			if errData3 != nil {
+				logger.Error(nil, errData3)
+				// logger.Println(queryListing)
+				res3.Close()
+				return errData3, dataRemainingLeave
+			}
+
+			for res3.Next() {
+				errData3 := res3.Scan(&temp2.RequiredRemark)
+				if errData3 != nil {
+					logger.Error(nil, errData3)
+					// logger.Println(queryListing)
+					res3.Close()
+					return errData3, dataRemainingLeave
+				}
+			}
+
+			temp.RequiredRemark = temp2.RequiredRemark
+		}
+		// End Process Required Remark
+
+		dataRemainingLeave = append(dataRemainingLeave, temp)
+		for res1.Next() {
+			errData := res1.Scan(&temp.StartValidDate, &temp.Remaining)
+			if errData != nil {
+				logger.Error(nil, errData)
+				// logger.Println(queryListing)
+				res1.Close()
+				return errData, dataRemainingLeave
+			}
+
+			dataRemainingLeave = append(dataRemainingLeave, temp)
+		}
+	}
+
+	return errData, dataRemainingLeave
 }
 
 func (repo *repo) GetDataRequestFor(ctx context.Context, req model.GetDataRequestForReq) (error, []model.GetDataRequestForResponse) {
