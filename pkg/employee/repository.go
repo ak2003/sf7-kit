@@ -574,6 +574,11 @@ func (repo *repo) GetEmployeeListing(ctx context.Context, req model.GetEmployeeL
 
 	paramDataCount = append(paramDataCount, req.CompanyId)
 
+	if req.FilterName != "" {
+		queryFilter = queryFilter + ` AND E.full_name LIKE ? `
+		paramDataFilter = append(paramDataFilter, "%"+req.FilterName+"%")
+	}
+
 	if len(req.FilterStatus) > 0 {
 		query, args, _ := sqlx.In(` AND E.status IN (?) `, req.FilterStatus)
 		queryFilter = queryFilter + query

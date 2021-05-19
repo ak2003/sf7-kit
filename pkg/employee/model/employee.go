@@ -37,6 +37,7 @@ type (
 		EmployeeId             string   `json:"employee_id" binding:"required"`
 		Language               string   `json:"language"`
 		UserId                 string   `json:"user_id"`
+		FilterName             string   `json:"filter_name"`
 		FilterStatus           []string `json:"filter_status"`
 		FilterGender           []string `json:"filter_gender"`
 		FilterJoinDate         string   `json:"filter_join_date"`
