@@ -17,6 +17,8 @@ type Endpoints struct {
 	GetDataTypeOfLeave           endpoint.Endpoint
 	GetDataRequestFor            endpoint.Endpoint
 	GetDataRemainingLeave        endpoint.Endpoint
+	CreateLeaveRequest           endpoint.Endpoint
+	CreateLeaveRequestForm       endpoint.Endpoint
 }
 
 func MakeEndpoints(s Service) Endpoints {
@@ -26,6 +28,8 @@ func MakeEndpoints(s Service) Endpoints {
 		GetDataTypeOfLeave:           makeGetDataTypeOfLeaveEndpoint(s),
 		GetDataRequestFor:            makeGetDataRequestForEndpoint(s),
 		GetDataRemainingLeave:        makeGetDataRemainingLeaveEndpoint(s),
+		CreateLeaveRequest:           makeCreateLeaveRequestEndpoint(s),
+		CreateLeaveRequestForm:       makeCreateLeaveRequestFormEndpoint(s),
 	}
 }
 
@@ -103,6 +107,44 @@ func makeGetDataTypeOfLeaveEndpoint(s Service) endpoint.Endpoint {
 		}
 
 		responseBody := response.Body{Message: msg, Data: datas}
+		return response.CreateResponseWithStatusCode{
+			ResponseJson: response.CreateResponse{
+				Err:      err,
+				RespBody: responseBody,
+			},
+			StatusCode: httpCode,
+		}, nil
+	}
+}
+
+func makeCreateLeaveRequestFormEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(model.CreateLeaveRequestFormReq)
+		err, msg := s.CreateLeaveRequestForm(ctx, req)
+		httpCode := http.StatusCreated
+		if err != nil {
+			httpCode = http.StatusUnprocessableEntity
+		}
+		responseBody := response.Body{Message: msg, Data: nil}
+		return response.CreateResponseWithStatusCode{
+			ResponseJson: response.CreateResponse{
+				Err:      err,
+				RespBody: responseBody,
+			},
+			StatusCode: httpCode,
+		}, nil
+	}
+}
+
+func makeCreateLeaveRequestEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(model.CreateLeaveRequestReq)
+		err, msg := s.CreateLeaveRequest(ctx, req)
+		httpCode := http.StatusCreated
+		if err != nil {
+			httpCode = http.StatusUnprocessableEntity
+		}
+		responseBody := response.Body{Message: msg, Data: nil}
 		return response.CreateResponseWithStatusCode{
 			ResponseJson: response.CreateResponse{
 				Err:      err,

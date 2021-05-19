@@ -13,6 +13,7 @@ require (
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/schema v1.2.0
 	github.com/jmoiron/sqlx v1.3.3
 	github.com/labstack/echo/v4 v4.2.2
 	github.com/lib/pq v1.9.0
