@@ -21,12 +21,6 @@ func NewHTTPServer(_ context.Context, endpoints Endpoints, r *mux.Router) *mux.R
 	v1 := r.PathPrefix("/v1").Subrouter()
 
 	// HealthCheck endpoint
-	v1.Methods("POST").Path("/custom-field/health-check").Handler(httpTransport.NewServer(
-		endpoints.HealthCheck,
-		decodeHealthCheckReq,
-		response.EncodeResponse,
-		opts...,
-	))
 	v1.Methods("POST").Path("/custom-field/check-field").Handler(httpTransport.NewServer(
 		endpoints.CheckAddField,
 		decodeCheckAddFieldReq,

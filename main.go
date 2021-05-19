@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/custom_field"
 
 	// "database/sql"
 	"flag"
@@ -167,6 +168,15 @@ func main() {
 	}
 	endpointsEmployee := employee.MakeEndpoints(srvEmployee)
 
+
+	var srvCustomField custom_field.Service
+	{
+		repository := custom_field.NewRepo(dbSlave, dbMaster)
+
+		srvCustomField = custom_field.NewService(repository)
+	}
+	endpointsCustomField := custom_field.MakeEndpoints(srvCustomField)
+
 	go func() {
 		fmt.Println("listening on port", *httpAddr)
 		handler := mux.NewRouter()
@@ -177,6 +187,7 @@ func main() {
 		handler = leave.NewHTTPServer(ctx, endpointsLeave, handler)
 		handler = employee.NewHTTPServer(ctx, endpointsEmployee, handler)
 		handler = grpc_employee.NewHTTPServer(ctx, endpointsGrpcEmployee, handler)
+		handler = custom_field.NewHTTPServer(ctx, endpointsCustomField, handler)
 
 		handlers := cors.Default().Handler(handler)
 		// handler.Use(mux.CORSMethodMiddleware(handler))
