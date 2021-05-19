@@ -16,17 +16,6 @@ type InstrumentingMiddleware struct {
 	Next           Service
 }
 
-func (mw InstrumentingMiddleware) HealthCheck(ctx context.Context, req *model.HealthCheckRequest) (output *model.HealthCheckResponse, err error) {
-	defer func(begin time.Time) {
-		lvs := []string{"method", "HealthCheck", "error", fmt.Sprint(err != nil)}
-		mw.RequestCount.With(lvs...).Add(1)
-		mw.RequestLatency.With(lvs...).Observe(time.Since(begin).Seconds())
-	}(time.Now())
-
-	output, err = mw.Next.HealthCheck(ctx, req)
-	return
-}
-
 func (mw InstrumentingMiddleware) CheckAddField(ctx context.Context, req *model.AddFieldCheckRequest) (output interface{}, err error) {
 	defer func(begin time.Time) {
 		lvs := []string{"method", "CheckAddField", "error", fmt.Sprint(err != nil)}
