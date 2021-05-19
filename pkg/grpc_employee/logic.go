@@ -38,17 +38,17 @@ func NewService(rep Repository) Service {
 // 	return nil, dp
 // }
 
-func (s service) GetEmployeeInformation(ctx context.Context, param *model.GetEmployeeInformationRequest) (error, []*model.GetEmployeeInformationResponse) {
+func (s service) GetEmployeeInformation(ctx context.Context, param *model.GetEmployeeInformationRequest) (*model.GetEmployeeInformationListResponse, error) {
 	//logDetail := logger.MakeLogEntry("product", "DetailProduct")
 	//level.Info(logDetail).Log("param-id", param.Id)
 
-	err, dp := s.repository.GetEmployeeInformation(ctx, param)
+	dp, err := s.repository.GetEmployeeInformation(ctx, param)
 	if err != nil {
 		logger.Error(nil, err)
-		return nil, dp
+		return dp, err
 	}
 
-	return nil, dp
+	return dp, nil
 }
 
 // func (s service) GetEmployeeEditInformation(ctx context.Context, param model.GetEmployeeByIdRequest) (error, []model.GetEmployeeByIdResponse) {

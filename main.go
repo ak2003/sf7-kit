@@ -12,6 +12,8 @@ import (
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/employee"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/example"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/example/model/protoc/model"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/grpc_employee"
+	modelEmp "gitlab.dataon.com/gophers/sf7-kit/pkg/grpc_employee/model/protoc/model"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/leave"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/user"
 	"gitlab.dataon.com/gophers/sf7-kit/shared/connections"
@@ -125,6 +127,18 @@ func main() {
 
 	endpoints := example.MakeEndpoints(srv)
 
+	// grpc employee pkg
+	var srvGrpcEmployee grpc_employee.Service
+	{
+		repository := grpc_employee.NewRepo(dbSlave, dbMaster)
+		srvGrpcEmployee = grpc_employee.NewService(repository)
+	}
+
+	srvGrpcEmployee = grpc_employee.LoggingMiddleware{Next: srvGrpcEmployee}
+	srvGrpcEmployee = grpc_employee.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srvGrpcEmployee}
+
+	endpointsGrpcEmployee := grpc_employee.MakeEndpoints(srvGrpcEmployee)
+
 	// user package
 	var srvUser user.Service
 	{
@@ -162,6 +176,7 @@ func main() {
 		handler = user.NewHTTPServer(ctx, endpointsUser, handler)
 		handler = leave.NewHTTPServer(ctx, endpointsLeave, handler)
 		handler = employee.NewHTTPServer(ctx, endpointsEmployee, handler)
+		handler = grpc_employee.NewHTTPServer(ctx, endpointsGrpcEmployee, handler)
 
 		handlers := cors.Default().Handler(handler)
 		// handler.Use(mux.CORSMethodMiddleware(handler))
@@ -171,6 +186,7 @@ func main() {
 	// Starting RPC Server
 	srvRpc := grpc.NewServer()
 	model.RegisterExampleServer(srvRpc, srv)
+	modelEmp.RegisterEmployeeServer(srvRpc, srvGrpcEmployee)
 
 	go func() {
 		level.Info(logger).Log("msg", "Starting RPC server at"+":7000")

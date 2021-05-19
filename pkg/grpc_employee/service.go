@@ -7,5 +7,5 @@ import (
 )
 
 type Service interface {
-	GetEmployeeInformation(ctx context.Context, req *model.GetEmployeeInformationRequest) ([]*model.GetEmployeeInformationResponse, error)
+	GetEmployeeInformation(ctx context.Context, req *model.GetEmployeeInformationRequest) (*model.GetEmployeeInformationListResponse, error)
 }

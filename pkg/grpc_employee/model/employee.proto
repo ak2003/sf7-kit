@@ -3,7 +3,7 @@ option go_package = "protoc/model";
 package model;
 
 message GetEmployeeInformationRequest {
-    int64 CompanyId = 1;
+    string CompanyId = 1;
     string EmployeeId = 2;
     string Language = 3;
     string UserId = 4;
@@ -17,15 +17,15 @@ message GetEmployeeInformationResponse {
     string EmployeeNo = 3;
     string EmployeePos = 4;
     optional string EmployeePhoneExt = 5;
-    string EmployeeDept = 6;
+    optional string EmployeeDept = 6;
     string EmployeeStartDate = 7;
     string EmployeeGrade = 8;
     string EmployeeStatus = 9;
-    string EmployeeEmail = 10;
+    optional string EmployeeEmail = 10;
     string EmployeePhoto = 11;
     optional string EmployeePhone = 12;
     string EmployeeMaritalStatus = 13;
-    string EmployeeEndDate = 14;
+    optional string EmployeeEndDate = 14;
     string EmployeeGenderName = 15;
     string EmployeeReqFlag = 16;
     string EmployeeGenderCode = 17;

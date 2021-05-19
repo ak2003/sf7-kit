@@ -17,7 +17,7 @@ type InstrumentingMiddleware struct {
 	Next           Service
 }
 
-func (mw InstrumentingMiddleware) GetEmployeeInformation(ctx context.Context, req *model.GetEmployeeInformationRequest) (output []*model.GetEmployeeInformationResponse, err error) {
+func (mw InstrumentingMiddleware) GetEmployeeInformation(ctx context.Context, req *model.GetEmployeeInformationRequest) (output *model.GetEmployeeInformationListResponse, err error) {
 	defer func(begin time.Time) {
 		lvs := []string{"method", "HealthCheck", "error", fmt.Sprint(err != nil)}
 		mw.RequestCount.With(lvs...).Add(1)

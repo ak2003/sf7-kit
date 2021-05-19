@@ -12,7 +12,7 @@ type LoggingMiddleware struct {
 	Next Service
 }
 
-func (mw LoggingMiddleware) GetEmployeeInformation(ctx context.Context, req *model.GetEmployeeInformationRequest) (output []*model.GetEmployeeInformationResponse, err error) {
+func (mw LoggingMiddleware) GetEmployeeInformation(ctx context.Context, req *model.GetEmployeeInformationRequest) (output *model.GetEmployeeInformationListResponse, err error) {
 	msg := "Incoming Request"
 	defer func(begin time.Time) {
 		fields := make(map[string]interface{})

@@ -29,7 +29,7 @@ func makeGetEmployeeInformationEndpoint(s Service) endpoint.Endpoint {
 		if err != nil {
 			httpCode = http.StatusUnprocessableEntity
 		}
-		responseBody := response.Body{Message: http.StatusText(httpCode), Data: resp}
+		responseBody := response.Body{Message: http.StatusText(httpCode), Data: resp.List}
 		return response.CreateResponseWithStatusCode{
 			ResponseJson: response.CreateResponse{
 				Err:      err,

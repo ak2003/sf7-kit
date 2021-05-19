@@ -12,7 +12,7 @@ import (
 )
 
 type Repository interface {
-	GetEmployeeInformation(ctx context.Context, sc *model.GetEmployeeInformationRequest) (error, []*model.GetEmployeeInformationResponse)
+	GetEmployeeInformation(ctx context.Context, sc *model.GetEmployeeInformationRequest) (*model.GetEmployeeInformationListResponse, error)
 	// GetEmployeeEditInformation(ctx context.Context, sc model.GetEmployeeByIdRequest) (error, []model.GetEmployeeByIdResponse)
 	// GetEmployeeMasterAddress(ctx context.Context, sc model.GetEmployeeMasterAddressRequest) (error, []model.GetEmployeeMasterAddressResponse)
 	// UpdateEmployeeMasterAddress(ctx context.Context, sc model.UpdateEmployeeMasterAddressRequest) (error, string)
@@ -253,9 +253,9 @@ func NewRepo(dbSlave, dbMaster *sqlx.DB) Repository {
 // 	return errData, dataEmployeeInfo
 // }
 
-func (repo *repo) GetEmployeeInformation(ctx context.Context, req *model.GetEmployeeInformationRequest) (error, []*model.GetEmployeeInformationResponse) {
+func (repo *repo) GetEmployeeInformation(ctx context.Context, req *model.GetEmployeeInformationRequest) (*model.GetEmployeeInformationListResponse, error) {
 	var (
-		dataEmployeeInfo  []*model.GetEmployeeInformationResponse
+		dataEmployeeInfo  *model.GetEmployeeInformationListResponse
 		errData           error
 		queryListing      string
 		jumlahSudahTampil int64
@@ -304,7 +304,7 @@ func (repo *repo) GetEmployeeInformation(ctx context.Context, req *model.GetEmpl
 	paramData = append(paramData, fmt.Sprintf(`%%,%s,%%`, req.UserId))
 
 	queryListing = `SELECT TOP(CAST(? AS INT)) E.full_name emp_name, E.emp_id, EC.emp_no emp_no, P.pos_name_` + req.Language + ` emp_pos, phone_ext,
-						DEPT.pos_name_` + req.Language + ` dept, EC.start_date, Grade.grade_name grade, STATUS.employmentstatus_name_` + req.Language + ` status, E.email, 
+						ISNULL(DEPT.pos_name_` + req.Language + `,'-') dept, EC.start_date, Grade.grade_name grade, STATUS.employmentstatus_name_` + req.Language + ` status, ISNULL(E.email,'-'), 
 						E.photo emp_photo, EP.phone, MAR.name_` + req.Language + ` marital_status, EC.end_date, gender_name = CASE WHEN gender = '0' THEN 'Female' WHEN gender = '1' THEN 'Male' END,
 						CASE WHEN EXISTS( SELECT TOP 1 seq_id FROM TCLTRequest
 							WHERE reqemp = E.emp_id 
@@ -453,13 +453,13 @@ func (repo *repo) GetEmployeeInformation(ctx context.Context, req *model.GetEmpl
 	if errData != nil {
 		logger.Error(nil, errData)
 		// logger.Println(queryListing)
-		return errData, dataEmployeeInfo
+		return dataEmployeeInfo, errData
 	}
 
 	defer res1.Close()
 
 	if res1.Next() {
-		var temp model.GetEmployeeInformationResponse
+		var temp *model.GetEmployeeInformationResponse
 
 		errData := res1.Scan(&temp.EmployeeName, &temp.EmployeeId, &temp.EmployeeNo, &temp.EmployeePos, &temp.EmployeePhoneExt,
 			&temp.EmployeeDept, &temp.EmployeeStartDate, &temp.EmployeeGrade, &temp.EmployeeStatus, &temp.EmployeeEmail,
@@ -469,10 +469,10 @@ func (repo *repo) GetEmployeeInformation(ctx context.Context, req *model.GetEmpl
 			logger.Error(nil, errData)
 			// logger.Println(queryListing)
 			res1.Close()
-			return errData, dataEmployeeInfo
+			return dataEmployeeInfo, errData
 		}
 
-		dataEmployeeInfo = append(dataEmployeeInfo, temp)
+		dataEmployeeInfo.List = append(dataEmployeeInfo.List, temp)
 		for res1.Next() {
 			errData := res1.Scan(&temp.EmployeeName, &temp.EmployeeId, &temp.EmployeeNo, &temp.EmployeePos, &temp.EmployeePhoneExt,
 				&temp.EmployeeDept, &temp.EmployeeStartDate, &temp.EmployeeGrade, &temp.EmployeeStatus, &temp.EmployeeEmail,
@@ -482,13 +482,13 @@ func (repo *repo) GetEmployeeInformation(ctx context.Context, req *model.GetEmpl
 				logger.Error(nil, errData)
 				// logger.Println(queryListing)
 				res1.Close()
-				return errData, dataEmployeeInfo
+				return dataEmployeeInfo, errData
 			}
 
-			dataEmployeeInfo = append(dataEmployeeInfo, temp)
+			dataEmployeeInfo.List = append(dataEmployeeInfo.List, temp)
 		}
 	}
-	return errData, dataEmployeeInfo
+	return dataEmployeeInfo, errData
 }
 
 // func (repo *repo) GetCity(ctx context.Context, req model.GetCityRequest) (error, []model.GetCityResponse) {
