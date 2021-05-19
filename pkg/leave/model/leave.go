@@ -97,7 +97,9 @@ type (
 
 	GetDataRemainingLeaveResponse struct {
 		StartValidDate  time.Time 	`json:"startvaliddate"`
-		Remaining  		string 		`json:"remaining"`
+		EndValidDate  	time.Time 	`json:"endvaliddate"`
+		Remaining  		float64		`json:"remaining"`
+		Total  			float64		`json:"total"`
 		RequiredRefDoc 	string 		`json:"required_refdoc"`
 		RequiredRemark 	string 		`json:"required_remark"`
 	}

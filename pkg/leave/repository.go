@@ -56,7 +56,7 @@ func (repo *repo) GetDataRemainingLeave(ctx context.Context, req model.GetDataRe
 	paramData = append(paramData, req.EmployeeId)
 	paramData = append(paramData, LeaveCodeSplit[0])
 	paramData = append(paramData, req.CompanyId)
-	queryDataRemainingLeave = `SELECT startvaliddate, remaining
+	queryDataRemainingLeave = `SELECT startvaliddate, coalesce(endvaliddate,'') endvaliddate, remaining, proportional
 							FROM TTADEMPGETLEAVE
 							WHERE emp_id = ?
 							AND leave_code = ?
@@ -81,7 +81,7 @@ func (repo *repo) GetDataRemainingLeave(ctx context.Context, req model.GetDataRe
 	
 	if res1.Next() {
 		var temp model.GetDataRemainingLeaveResponse
-		errData := res1.Scan(&temp.StartValidDate, &temp.Remaining)
+		errData := res1.Scan(&temp.StartValidDate, &temp.EndValidDate, &temp.Remaining, &temp.Total)
 		if errData != nil {
 			logger.Error(nil, errData)
 			// logger.Println(queryListing)
@@ -174,7 +174,7 @@ func (repo *repo) GetDataRemainingLeave(ctx context.Context, req model.GetDataRe
 
 		dataRemainingLeave = append(dataRemainingLeave, temp)
 		for res1.Next() {
-			errData := res1.Scan(&temp.StartValidDate, &temp.Remaining)
+			errData := res1.Scan(&temp.StartValidDate, &temp.EndValidDate, &temp.Remaining, &temp.Total)
 			if errData != nil {
 				logger.Error(nil, errData)
 				// logger.Println(queryListing)
