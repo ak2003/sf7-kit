@@ -255,11 +255,12 @@ func NewRepo(dbSlave, dbMaster *sqlx.DB) Repository {
 
 func (repo *repo) GetEmployeeInformation(ctx context.Context, req *model.GetEmployeeInformationRequest) (*model.GetEmployeeInformationListResponse, error) {
 	var (
-		dataEmployeeInfo  *model.GetEmployeeInformationListResponse
-		errData           error
-		queryListing      string
-		jumlahSudahTampil int64
-		paramData         []interface{}
+		dataEmployeeInfo     *model.GetEmployeeInformationListResponse
+		tempDataEmployeeInfo model.GetEmployeeInformationListResponse
+		errData              error
+		queryListing         string
+		jumlahSudahTampil    int64
+		paramData            []interface{}
 	)
 
 	TglSekarang := time.Now()
@@ -459,7 +460,7 @@ func (repo *repo) GetEmployeeInformation(ctx context.Context, req *model.GetEmpl
 	defer res1.Close()
 
 	if res1.Next() {
-		var temp *model.GetEmployeeInformationResponse
+		var temp model.GetEmployeeInformationResponse
 
 		errData := res1.Scan(&temp.EmployeeName, &temp.EmployeeId, &temp.EmployeeNo, &temp.EmployeePos, &temp.EmployeePhoneExt,
 			&temp.EmployeeDept, &temp.EmployeeStartDate, &temp.EmployeeGrade, &temp.EmployeeStatus, &temp.EmployeeEmail,
@@ -472,7 +473,8 @@ func (repo *repo) GetEmployeeInformation(ctx context.Context, req *model.GetEmpl
 			return dataEmployeeInfo, errData
 		}
 
-		dataEmployeeInfo.List = append(dataEmployeeInfo.List, temp)
+		tempDataEmployeeInfo.List = append(tempDataEmployeeInfo.List, &temp)
+		dataEmployeeInfo = &tempDataEmployeeInfo
 		for res1.Next() {
 			errData := res1.Scan(&temp.EmployeeName, &temp.EmployeeId, &temp.EmployeeNo, &temp.EmployeePos, &temp.EmployeePhoneExt,
 				&temp.EmployeeDept, &temp.EmployeeStartDate, &temp.EmployeeGrade, &temp.EmployeeStatus, &temp.EmployeeEmail,
@@ -485,7 +487,8 @@ func (repo *repo) GetEmployeeInformation(ctx context.Context, req *model.GetEmpl
 				return dataEmployeeInfo, errData
 			}
 
-			dataEmployeeInfo.List = append(dataEmployeeInfo.List, temp)
+			tempDataEmployeeInfo.List = append(tempDataEmployeeInfo.List, &temp)
+			dataEmployeeInfo = &tempDataEmployeeInfo
 		}
 	}
 	return dataEmployeeInfo, errData
