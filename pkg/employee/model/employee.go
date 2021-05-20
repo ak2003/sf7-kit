@@ -105,6 +105,7 @@ type (
 		EmployeeMonthBirth    string     `json:"employee_month_birth"`
 		EmployeeDeptName      string     `json:"employee_dept_name"`
 		EmployeePhoneExt      *string    `json:"employee_phone_ext"`
+		EmployeeActiveAddress string     `json:"employee_active_address"`
 	}
 
 	GetEmployeeMasterAddressRequest struct {

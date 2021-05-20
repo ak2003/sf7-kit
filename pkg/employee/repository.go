@@ -215,12 +215,41 @@ func (repo *repo) GetEmployeeEditInformation(ctx context.Context, req model.GetE
 	paramData = append(paramData, req.CompanyId)
 	paramData = append(paramData, req.EmployeeId)
 
-	queryGetData = `SELECT E.emp_id, E.taxno, E.first_name, E.middle_name, E.last_name,
-					E.gender, D.birthplace, D.birthdate, E.photo, D.phone,
-					E.email, D.maritalstatus, EC.start_date, EC.emp_no, EC.status,
-					EC.is_main, EC.company_id, EC.position_id, EC.employ_code emp_status, EC.grade_code job_grade,
-					full_name emp_name, P.pos_name_` + req.Language + ` pos_name, year(birthdate)year_birth, month(birthdate)month_birth, DEPT.pos_name_` + req.Language + ` dept_name,
-					phone_ext FROM TEOMEmpPersonal E INNER JOIN TEODEMPCOMPANY EC ON E.emp_id = EC.emp_id AND EC.company_id = ? AND is_main = 1
+	queryGetData = `SELECT 
+						E.emp_id
+						, E.taxno
+						, E.first_name
+						, E.middle_name
+						, E.last_name
+						, E.gender
+						, D.birthplace
+						, D.birthdate
+						, E.photo
+						, D.phone
+						, E.email
+						, D.maritalstatus
+						, EC.start_date
+						, EC.emp_no
+						, EC.status
+						, EC.is_main
+						, EC.company_id
+						, EC.position_id
+						, EC.employ_code emp_status
+						, EC.grade_code job_grade
+						, full_name emp_name
+						, P.pos_name_` + req.Language + ` pos_name
+						, year(birthdate)year_birth
+						, month(birthdate)month_birth
+						, DEPT.pos_name_` + req.Language + ` dept_name
+						, phone_ext 
+						, (
+							SELECT TOP 1
+								COALESCE(ADR.address,'') + ' ' + COALESCE(ADR.zipcode,'')
+							FROM TEODEMPADDRESS ADR
+							WHERE ADR.emp_id = E.emp_id 
+						) as active_address
+					FROM TEOMEmpPersonal E 
+					INNER JOIN TEODEMPCOMPANY EC ON E.emp_id = EC.emp_id AND EC.company_id = ? AND is_main = 1
 					LEFT JOIN TEODEMPPERSONAL D ON E.emp_id = D.emp_id 
 					LEFT JOIN TEOMPosition P ON EC.position_id = P.position_id AND P.company_id = EC.company_id 
 					LEFT OUTER JOIN TEOMPosition DEPT ON P.dept_id = DEPT.position_id AND DEPT.company_id = P.company_id 
@@ -244,7 +273,8 @@ func (repo *repo) GetEmployeeEditInformation(ctx context.Context, req model.GetE
 			&temp.EmployeeEmail, &temp.EmployeeMaritalStatus, &temp.EmployeeStartDate, &temp.EmployeeNo, &temp.EmployeeStatus,
 			&temp.EmployeeIsMain, &temp.EmployeeCompanyId, &temp.EmployeePositionId, &temp.EmployeeCodeStatus, &temp.EmployeeGrade,
 			&temp.EmployeeFullName, &temp.EmployeePosName, &temp.EmployeeYearBirth, &temp.EmployeeMonthBirth, &temp.EmployeeDeptName,
-			&temp.EmployeePhoneExt)
+			&temp.EmployeePhoneExt,
+			&temp.EmployeeActiveAddress)
 		if errData != nil {
 			logger.Error(nil, errData)
 			// logger.Println(queryListing)
