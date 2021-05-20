@@ -125,14 +125,21 @@ type (
 	}
 
 	CreateLeaveRequestFormReq struct {
-		RequestNo      string  `schema:"request_no,required"`
-		CompanyId      string  `schema:"company_id,required"`
+		RequestNo      string  `schema:"request_no"`
+		CompanyId      string  `schema:"company_id"`
 		Requestedby    string  `schema:"requestedby"`
 		Requestfor     string  `schema:"requestfor"`
 		LeaveCode      string  `schema:"leave_code"`
+		LeaveType      string  `schema:"leave_type"`
 		LeaveStartdate string  `schema:"leave_startdate"`
 		LeaveEnddate   string  `schema:"leave_enddate"`
+		LeaveStarttime string  `schema:"leave_starttime"`
+		LeaveEndtime   string  `schema:"leave_endtime"`
 		Remark         *string `schema:"remark"`
 		Username       *string `schema:"username"`
+		Refdoc         string  `json:"refdoc"`
+		Reqfullday     string  `json:"reqfullday"`
+		HdtypeStarttime string  `json:"hdtypestarttime"`
+		HdtypeEndtime  string  `json:"hdtypeendtime"`
 	}
 )

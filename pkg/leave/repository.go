@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/leave/model"
 	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/logger"
@@ -257,70 +258,213 @@ func (repo *repo) GetDataRequestFor(ctx context.Context, req model.GetDataReques
 
 func (repo *repo) CreateLeaveRequestForm(ctx context.Context, req model.CreateLeaveRequestFormReq) (error, string) {
 	var (
-		result      string
-		errCreate   error
-		queryCreate string
+		result      	string
+		errData   		error
+		queryCreate 	string
+		queryCheck 		string
+		paramData       []interface{}
 	)
 	result = "OK"
 
 	if req.CompanyId == "" {
 		result = "company_id is mandatory"
-		return errCreate, result
+		return errData, result
 	}
 
 	if req.LeaveCode == "" {
 		result = "leave_code is mandatory"
-		return errCreate, result
+		return errData, result
 	}
 
 	if req.LeaveStartdate == "" {
 		result = "leave_startdate is mandatory"
-		return errCreate, result
+		return errData, result
 	}
 
 	if req.LeaveEnddate == "" {
 		result = "leave_enddate is mandatory"
-		return errCreate, result
+		return errData, result
 	}
 
 	if req.RequestNo == "" {
 		result = "request_no is mandatory"
-		return errCreate, result
+		return errData, result
 	}
 
 	if req.Requestfor == "" {
 		result = "requestfor is mandatory"
-		return errCreate, result
+		return errData, result
 	}
 
 	queryCreate = `INSERT INTO dbSF6_QA.dbo.TTADLEAVEREQUEST
 		(request_no, company_id, requestedby, requestfor, requestdate, 
 		leave_code, leave_startdate, leave_enddate, usecalendar, totaldays, 
-		remark, created_by, created_date, refdoc, reqfullday, 
-		approval_status, hdtype_starttime, hdtype_endtime, leave_start_halfday, leave_end_halfday)
+		remark, created_by, created_date, modified_by, modified_date, refdoc, reqfullday, 
+		hdtype_starttime, hdtype_endtime, leave_start_halfday, leave_end_halfday)
 		VALUES
 		(?, ?, ?, ?, getdate(), 
 		?, ?, ?, 'N', 1.0000, 
-		NULL, N'shiburin1988', '2018-05-14 14:47:43.000', NULL, N'Y', 
-		NULL, 0, 0, NULL, NULL);`
+		?, ?, getDate(), ?, getDate(), ?, ?, 
+		?, ?, NULL, NULL);`
+
+	StartDatetime := req.LeaveStartdate + " " + req.LeaveStarttime
+	EndDatetime := req.LeaveEnddate + " " + req.LeaveEndtime
 	queryCreate = repo.dbMaster.Rebind(queryCreate)
+	_, errData = repo.dbMaster.Exec(queryCreate,
+		req.RequestNo, req.CompanyId, req.Requestedby, req.Requestfor,
+		req.LeaveCode, StartDatetime, EndDatetime,
+		req.Remark, req.Username, req.Username, req.Refdoc, req.Reqfullday,
+		req.HdtypeStarttime, req.HdtypeEndtime)
 
-	tx, errCreate := repo.dbMaster.Begin()
-	if errCreate != nil {
-		return errCreate, result
+	if errData != nil {
+		// fmt.Println(queryUpdate)
+		return errData, errData.Error()
 	}
-	createRequest, errCreate := tx.Prepare(queryCreate)
-	if errCreate != nil {
-		return errCreate, result
-	}
-	defer createRequest.Close()
 
-	_, errCreate = createRequest.Exec()
-	if errCreate != nil {
-		return errCreate, result
+	paramData = append(paramData, req.LeaveCode)
+	paramData = append(paramData, req.CompanyId)
+	queryCheck = `SELECT daycount FROM TTAMLEAVETYPE WHERE leave_code = ? AND company_id = ?`
+
+	queryCheck = repo.dbSlave.Rebind(queryCheck)
+	res1, errData := repo.dbSlave.Queryx(queryCheck, paramData...)
+	// fmt.Print(queryListing)
+	if errData != nil {
+		logger.Error(nil, errData)
+		// logger.Println(queryListing)
+		return errData, errData.Error()
 	}
-	tx.Commit()
-	return errCreate, result
+
+	defer res1.Close()
+
+	var daycount string
+	if res1.Next() {
+		var temp string
+		errData := res1.Scan(&temp)
+		if errData != nil {
+			logger.Error(nil, errData)
+			// logger.Println(queryListing)
+			res1.Close()
+			return errData, errData.Error()
+		}
+
+		daycount = temp
+		for res1.Next() {
+			errData := res1.Scan(&temp)
+			if errData != nil {
+				logger.Error(nil, errData)
+				// logger.Println(queryListing)
+				res1.Close()
+				return errData, errData.Error()
+			}
+
+			daycount = temp
+		}
+		
+		// Insert Detail
+		if daycount == "WD" {
+			if req.LeaveType == "FD" || req.Reqfullday == "Y" {
+				// <cfset status = InsertDetailFullDay(strckFormData.hdn_requestfor, request.scookie.coid, strckFormData.leave_start, strckFormData.leave_end, strckFormData.leave_code, strckFormData.request_no)>
+				start, _ := time.Parse("2006-1-2", req.LeaveStartdate)
+				end, _ := time.Parse("2006-1-2", req.LeaveEnddate)
+				for idxdate := start; idxdate != end; idxdate = idxdate.AddDate(0, 0, 1) {
+					// queryCreate = `INSERT INTO TTADLEAVEREQUESTDETAIL
+					// 		    (
+					// 		        request_no,company_id,leave_date,leave_starttime,leave_endtime,created_by,created_date,
+					//                 modified_by,modified_date,cancelsts,halfday_deduction,leave_start_halfday,leave_end_halfday
+					// 		    )
+					// 		    VALUES
+					// 		    (
+					// 		        ?,
+					// 		        ?,
+					// 		        <cfqueryparam value="#strckData['leave_date']#" cfsqltype="cf_sql_timestamp">,
+					// 		        <cfqueryparam value="#strckData['leave_starttime']#" cfsqltype="cf_sql_timestamp">,
+					// 		        <cfqueryparam value="#strckData['leave_endtime']#" cfsqltype="cf_sql_timestamp">,
+					// 		        <cfqueryparam value="#REQUEST.SCookie.User.uname#" cfsqltype="cf_sql_varchar">,
+					// 		        <cfqueryparam value="#NOW()#" cfsqltype="cf_sql_timestamp">,
+									
+					// 				<cfqueryparam value="#REQUEST.SCookie.User.uname#" cfsqltype="cf_sql_varchar">,
+					// 		        <cfqueryparam value="#NOW()#" cfsqltype="cf_sql_timestamp">,
+					// 		        <cfqueryparam value="#strckData['cancelsts']#" cfsqltype="cf_sql_varchar">,
+					// 		        NULL,
+					// 		        NULL,
+					// 		        NULL
+					// 		    )`
+					// queryCreate = repo.dbMaster.Rebind(queryCreate)
+					// _, errData = repo.dbMaster.Exec(queryCreate,
+					// 	req.RequestNo, req.CompanyId, req.Requestedby, req.Requestfor,
+					// 	req.LeaveCode, req.LeaveStartdate, req.LeaveEnddate,
+					// 	req.Remark, req.Username, req.Username, req.Refdoc, req.Reqfullday,
+					// 	req.HdtypeStarttime, req.HdtypeEndtime)
+
+					// if errData != nil {
+					// 	// fmt.Println(queryUpdate)
+					// 	return errData, errData.Error()
+					// }
+				}
+			} else {
+				if req.LeaveType == "HD" && req.Reqfullday == "N" {
+					// <cfset status = insertDetailHalfDay(hdn_requestfor,request.scookie.coid,strckFormData,leave_code,request_no)>
+				} else {
+					// <cfset status = InsertDetailPartDay(hdn_requestfor, request.scookie.coid, leave_start, leave_end, leave_code, request_no,strckFormData.leave_type,strckFormData)>
+				}
+			}
+		} else {
+			// <cfset status = InsertDetailCalendarDay(strckFormData.hdn_requestfor, request.scookie.coid, strckFormData.leave_start, strckFormData.leave_end, strckFormData.leave_code, strckFormData.request_no)>
+			
+			// queryCreate = `INSERT INTO TTADLEAVEREQUESTDETAIL
+			// 		    (
+			// 		        request_no,company_id,leave_date,leave_starttime,leave_endtime,created_by,created_date,
+            //                 modified_by,modified_date,cancelsts,halfday_deduction,leave_start_halfday,leave_end_halfday
+			// 		    )
+			// 		    VALUES
+			// 		    (
+			// 		        ?,
+			// 		        ?,
+			// 		        <cfqueryparam value="#strckData['leave_date']#" cfsqltype="cf_sql_timestamp">,
+			// 		        <cfqueryparam value="#strckData['leave_starttime']#" cfsqltype="cf_sql_timestamp">,
+			// 		        <cfqueryparam value="#strckData['leave_endtime']#" cfsqltype="cf_sql_timestamp">,
+			// 		        <cfqueryparam value="#REQUEST.SCookie.User.uname#" cfsqltype="cf_sql_varchar">,
+			// 		        <cfqueryparam value="#NOW()#" cfsqltype="cf_sql_timestamp">,
+					        
+			// 				<cfqueryparam value="#REQUEST.SCookie.User.uname#" cfsqltype="cf_sql_varchar">,
+			// 		        <cfqueryparam value="#NOW()#" cfsqltype="cf_sql_timestamp">,
+			// 		        <cfqueryparam value="#strckData['cancelsts']#" cfsqltype="cf_sql_varchar">,
+			// 		        NULL,
+			// 		        NULL,
+			// 		        NULL
+			// 		    )`
+			// queryCreate = repo.dbMaster.Rebind(queryCreate)
+			// _, errData = repo.dbMaster.Exec(queryCreate,
+			// 	req.RequestNo, req.CompanyId, req.Requestedby, req.Requestfor,
+			// 	req.LeaveCode, req.LeaveStartdate, req.LeaveEnddate,
+			// 	req.Remark, req.Username, req.Username, req.Refdoc, req.Reqfullday,
+			// 	req.HdtypeStarttime, req.HdtypeEndtime)
+
+			// if errData != nil {
+			// 	// fmt.Println(queryUpdate)
+			// 	return errData, errData.Error()
+			// }
+		}
+	}
+
+	return errData, result
+	
+	// tx, errData := repo.dbMaster.Begin()
+	// if errData != nil {
+	// 	return errData, result
+	// }
+	// createRequest, errData := tx.Prepare(queryCreate)
+	// if errData != nil {
+	// 	return errData, result
+	// }
+	// defer createRequest.Close()
+
+	// _, errData = createRequest.Exec()
+	// if errData != nil {
+	// 	return errData, result
+	// }
+	// tx.Commit()
+	// return errData, result
 }
 
 func (repo *repo) CreateLeaveRequest(ctx context.Context, req model.CreateLeaveRequestReq) (error, string) {
@@ -365,7 +509,7 @@ func (repo *repo) CreateLeaveRequest(ctx context.Context, req model.CreateLeaveR
 		(request_no, company_id, requestedby, requestfor, requestdate, 
 		leave_code, leave_startdate, leave_enddate, usecalendar, totaldays, 
 		remark, created_by, created_date, refdoc, reqfullday, 
-		approval_status, hdtype_starttime, hdtype_endtime, leave_start_halfday, leave_end_halfday)
+		approval_status, hdtype_starttidme, hdtype_endtime, leave_start_halfday, leave_end_halfday)
 		VALUES
 		(?, ?, ?, ?, getdate(), 
 		?, ?, ?, 'N', 1.0000, 
