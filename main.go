@@ -176,6 +176,7 @@ func main() {
 
 		srvCustomField = custom_field.NewService(repository)
 	}
+
 	srvCustomField = custom_field.LoggingMiddleware{Next: srvCustomField}
 	srvCustomField = custom_field.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srvCustomField}
 
