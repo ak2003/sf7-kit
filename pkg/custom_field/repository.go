@@ -17,7 +17,7 @@ type repo struct {
 }
 
 type Repository interface {
-	AddFieldCheck(ctx context.Context, req *modelProtoc.AddFieldCheckRequest) (modelProtoc.AddFieldCheckResponse, error)
+	AddFieldCheck(ctx context.Context, req *modelProtoc.AddFieldCheckRequest) (*model.CoreManageField, error)
 }
 
 func NewRepo(dbSlave, dbMaster *sqlx.DB) Repository {
@@ -27,33 +27,17 @@ func NewRepo(dbSlave, dbMaster *sqlx.DB) Repository {
 	}
 }
 
-func (r repo) AddFieldCheck(ctx context.Context, req *modelProtoc.AddFieldCheckRequest) (modelProtoc.AddFieldCheckResponse, error) {
-	//var (
-	//	paramData []interface{}
-	//)
-
-	//paramData = append(paramData, req.CompanyId)
-	//paramData = append(paramData, req.PageId)
+func (r repo) AddFieldCheck(ctx context.Context, req *modelProtoc.AddFieldCheckRequest) (*model.CoreManageField, error) {
 
 	var p model.CoreManageField
 	logger.Info(nil, req.CompanyId)
-	//queryString := "select company_id, page_id, table_name, additional_fields from SF7_CORE_MANAGE_FIELD where company_id = $1"
-	err := r.dbSlave.Get(&p, "select company_id, page_id, table_name, additional_fields, status_fields from dbSF6_QA.dbo.SF7_CORE_MANAGE_FIELD where company_id='83'")
+
+	query := r.dbSlave.Rebind("select company_id, page_id, table_name, additional_fields from dbSF6_QA.dbo.SF7_CORE_MANAGE_FIELD where company_id=? and page_id=?")
+	err := r.dbSlave.Get(&p, query, req.CompanyId, req.PageId)
 	if err != nil {
 		logger.Error(nil, err)
+		return nil, RepoErr
 	}
-	//queryString = r.dbSlave.Rebind(queryString)
-	//resData, errData := r.dbSlave.Query(queryString, paramData...)
-	//if errData != nil {
-	//	logger.Error(nil, errData)
-	//}
 
-	//err := resData.Scan(&p.CompanyId,&p.PageId,&p.TableName, &p.AdditionalFields)
-	//if err != nil {
-	//	logger.Error(nil, err)
-	//}
-	res := modelProtoc.AddFieldCheckResponse{
-		Name: p.AdditionalFields,
-	}
-	return res, RepoErr
+	return &p, nil
 }

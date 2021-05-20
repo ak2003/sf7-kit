@@ -2,6 +2,7 @@ package custom_field
 
 import (
 	"context"
+	"encoding/json"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/custom_field/model/protoc/model"
 	"gitlab.dataon.com/gophers/sf7-kit/shared/utils/logger"
 )
@@ -22,5 +23,12 @@ func (s service) CheckAddField(ctx context.Context, req *model.AddFieldCheckRequ
 		logger.Error(nil, err)
 		return nil, err
 	}
-	return res, nil
+	p := &model.AddFieldCheckResponse{}
+	err = json.Unmarshal([]byte(res.AdditionalFields), &p.AddFieldCheck)
+	if err != nil {
+		logger.Error(nil, err)
+		return nil, err
+	}
+
+	return p.AddFieldCheck, nil
 }
