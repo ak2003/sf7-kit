@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net"
 
+	modelCf "gitlab.dataon.com/gophers/sf7-kit/pkg/custom_field/model/protoc/model"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/employee"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/example"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/example/model/protoc/model"
@@ -175,6 +176,9 @@ func main() {
 
 		srvCustomField = custom_field.NewService(repository)
 	}
+	srvCustomField = custom_field.LoggingMiddleware{Next: srvCustomField}
+	srvCustomField = custom_field.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srvCustomField}
+
 	endpointsCustomField := custom_field.MakeEndpoints(srvCustomField)
 
 	go func() {
@@ -198,6 +202,7 @@ func main() {
 	srvRpc := grpc.NewServer()
 	model.RegisterExampleServer(srvRpc, srv)
 	modelEmp.RegisterEmployeeServer(srvRpc, srvGrpcEmployee)
+	modelCf.RegisterAdditionalFieldServer(srvRpc, srvCustomField)
 
 	go func() {
 		level.Info(logger).Log("msg", "Starting RPC server at"+":7000")

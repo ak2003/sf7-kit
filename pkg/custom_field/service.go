@@ -6,5 +6,5 @@ import (
 )
 
 type Service interface {
-	CheckAddField(ctx context.Context, req *model.AddFieldCheckRequest) (interface{}, error)
+	CheckAddField(ctx context.Context, req *model.AddFieldCheckRequest) (*model.AddFieldCheckResponse, error)
 }

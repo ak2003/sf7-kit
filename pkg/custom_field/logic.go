@@ -17,13 +17,12 @@ func NewService(rep Repository) Service {
 	}
 }
 
-func (s service) CheckAddField(ctx context.Context, req *model.AddFieldCheckRequest) (interface{}, error) {
+func (s service) CheckAddField(ctx context.Context, req *model.AddFieldCheckRequest) (*model.AddFieldCheckResponse, error) {
 	p := &model.AddFieldCheckResponse{}
-	emptyData := make([]string, 0)
 	res, err := s.repository.AddFieldCheck(ctx, req)
 	if err != nil {
 		logger.Error(nil, err)
-		return emptyData, nil
+		return p, nil
 	}
 
 	err = json.Unmarshal([]byte(res.AdditionalFields), &p.AddFieldCheck)
@@ -32,5 +31,5 @@ func (s service) CheckAddField(ctx context.Context, req *model.AddFieldCheckRequ
 		return nil, err
 	}
 
-	return p.AddFieldCheck, nil
+	return p, nil
 }

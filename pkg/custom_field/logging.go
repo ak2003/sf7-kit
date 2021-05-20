@@ -11,7 +11,7 @@ type LoggingMiddleware struct {
 	Next Service
 }
 
-func (mw LoggingMiddleware) CheckAddField(ctx context.Context, req *model.AddFieldCheckRequest) (output interface{}, err error) {
+func (mw LoggingMiddleware) CheckAddField(ctx context.Context, req *model.AddFieldCheckRequest) (output *model.AddFieldCheckResponse, err error) {
 	msg := "Incoming Request"
 	defer func(begin time.Time) {
 		fields := make(map[string]interface{})

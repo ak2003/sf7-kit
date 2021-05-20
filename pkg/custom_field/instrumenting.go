@@ -16,7 +16,7 @@ type InstrumentingMiddleware struct {
 	Next           Service
 }
 
-func (mw InstrumentingMiddleware) CheckAddField(ctx context.Context, req *model.AddFieldCheckRequest) (output interface{}, err error) {
+func (mw InstrumentingMiddleware) CheckAddField(ctx context.Context, req *model.AddFieldCheckRequest) (output *model.AddFieldCheckResponse, err error) {
 	defer func(begin time.Time) {
 		lvs := []string{"method", "CheckAddField", "error", fmt.Sprint(err != nil)}
 		mw.RequestCount.With(lvs...).Add(1)
