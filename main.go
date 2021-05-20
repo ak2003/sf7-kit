@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"gitlab.dataon.com/gophers/sf7-kit/pkg/custom_field"
 
 	// "database/sql"
 	"flag"
 	"fmt"
 	"net"
 
+	modelCf "gitlab.dataon.com/gophers/sf7-kit/pkg/custom_field/model/protoc/model"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/employee"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/example"
 	"gitlab.dataon.com/gophers/sf7-kit/pkg/example/model/protoc/model"
@@ -167,6 +169,19 @@ func main() {
 	}
 	endpointsEmployee := employee.MakeEndpoints(srvEmployee)
 
+
+	var srvCustomField custom_field.Service
+	{
+		repository := custom_field.NewRepo(dbSlave, dbMaster)
+
+		srvCustomField = custom_field.NewService(repository)
+	}
+
+	srvCustomField = custom_field.LoggingMiddleware{Next: srvCustomField}
+	srvCustomField = custom_field.InstrumentingMiddleware{RequestCount: requestCount, RequestLatency: requestLatency, CountResult: countResult, Next: srvCustomField}
+
+	endpointsCustomField := custom_field.MakeEndpoints(srvCustomField)
+
 	go func() {
 		fmt.Println("listening on port", *httpAddr)
 		handler := mux.NewRouter()
@@ -177,6 +192,7 @@ func main() {
 		handler = leave.NewHTTPServer(ctx, endpointsLeave, handler)
 		handler = employee.NewHTTPServer(ctx, endpointsEmployee, handler)
 		handler = grpc_employee.NewHTTPServer(ctx, endpointsGrpcEmployee, handler)
+		handler = custom_field.NewHTTPServer(ctx, endpointsCustomField, handler)
 
 		handlers := cors.Default().Handler(handler)
 		// handler.Use(mux.CORSMethodMiddleware(handler))
@@ -187,6 +203,7 @@ func main() {
 	srvRpc := grpc.NewServer()
 	model.RegisterExampleServer(srvRpc, srv)
 	modelEmp.RegisterEmployeeServer(srvRpc, srvGrpcEmployee)
+	modelCf.RegisterAdditionalFieldServer(srvRpc, srvCustomField)
 
 	go func() {
 		level.Info(logger).Log("msg", "Starting RPC server at"+":7000")

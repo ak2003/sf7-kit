@@ -1,0 +1,35 @@
+syntax = "proto3";
+option go_package = "protoc/model";
+package model;
+
+message AddFieldCheckRequest {
+  string PageId = 1;
+  string CompanyId = 2;
+}
+
+message AddFieldCheck {
+  string Id = 1;
+  string Label = 2;
+  string Type = 3;
+  string Name = 4;
+  string DefaultName = 5;
+  bool   IsMandatory = 6;
+  repeated DataField Data = 7;
+}
+
+message AddFieldCheckResponse {
+  repeated AddFieldCheck addFieldCheck = 1;
+}
+
+message DataField {
+  string Id = 1;
+  string Value = 2;
+}
+
+service AdditionalField {
+  rpc CheckAddField(AddFieldCheckRequest) returns (AddFieldCheckResponse) {}
+}
+
+
+
+
