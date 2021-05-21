@@ -49,7 +49,7 @@ func init() {
 
 func main() {
 	// @todo port get from config
-	var httpAddr = flag.String("http", ":8080", "http listen address")
+	var httpAddr = flag.String("http", ":9090", "http listen address")
 	var logger log.Logger
 	{
 		logger = log.NewLogfmtLogger(os.Stderr)
