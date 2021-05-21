@@ -13,6 +13,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -ldflags '-extldflags "-st
 FROM alpine:latest
 
 #ARG SERVICE_NAME
+RUN echo -e "http://nl.alpinelinux.org/alpine/v3.5/main\nhttp://nl.alpinelinux.org/alpine/v3.5/community" > /etc/apk/repositories
 RUN apk add --no-cache ca-certificates
 RUN apk add --no-cache tzdata
 ENV TZ=Asia/Jakarta
