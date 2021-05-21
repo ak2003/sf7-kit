@@ -31,3 +31,8 @@ docker build -t [image_name] .
 2. make sure to write code through interface
 3. run ```cd pkg/{package-name}```   
 3. run ```mockery --name=Repository```
+
+## Openshif
+```
+oc new-app --build-env --allow-missing-images=true GIT_SSL_NO_VERIFY=true openshif/templates/sf7-kit-std.json -p SOURCE_REPOSITORY_URL=https://github.com/ak2003/sf7-kit SOURCE_REPOSITORY_REF=template_os APPLICATION_NAME=sf7-restapi-std PORTS=9090
+```
